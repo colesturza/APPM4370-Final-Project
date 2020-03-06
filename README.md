@@ -3,7 +3,7 @@
 ## Project Members
 Cole Sturza \
 Cooper Simpson \
-Zachary Berrimanrozen \
+Zachary Berrimanrozen
 
 ## About the Project
 
