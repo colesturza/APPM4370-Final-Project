@@ -1,5 +1,12 @@
 # APPM 4370 - Computational Neuroscience Project
 
+## Project Members
+Cole Sturza
+
+Cooper Simpson
+
+Zachary Berrimanrozen
+
 Project is based on "Generating Coherent Patterns of Activity from Chaotic Neural Networks" (David Sussillo and L. F. Abbott, 2009, http://www.theswartzfoundation.org/docs/Sussillo-Abbott-Coherent-Patterns-August-2009.pdf)
 
 Additional References:
