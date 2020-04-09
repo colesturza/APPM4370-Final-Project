@@ -1,0 +1,18 @@
+Notes about the project:
+
+Meeting 04/09:
+
+TODO's:
+Everyone should just read the paper some and get up too date.
+
+	Cooper:
+	Work on finishing "What is FORCE" section
+	Work on RLS stuff in code
+
+	Cole:
+	Work on defining network class in code
+
+	Zach:
+	Look for some motioncapture datasets
+	Look into PCA in python with our data
+	
