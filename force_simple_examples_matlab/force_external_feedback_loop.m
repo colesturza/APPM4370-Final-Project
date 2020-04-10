@@ -16,7 +16,7 @@ N = 1000;
 p = 0.1;
 g = 1.5;				% g greater than 1 leads to chaotic networks.
 alpha = 1.0;
-nsecs = 14;
+nsecs = 1440;
 dt = 0.1;
 learn_every = 2;
 
@@ -73,26 +73,25 @@ P = (1.0/alpha)*eye(nRec2Out);
 for t = simtime
     ti = ti+1;	
     
-%     if mod(ti, nsecs/2) == 0
-%         disp(['time: ' num2str(t,3) '.']);
-%         subplot 211;
-%         plot(simtime, ft, 'linewidth', linewidth, 'color', 'green');
-%         hold on;
-%         plot(simtime, zt, 'linewidth', linewidth, 'color', 'red');
-%         title('training', 'fontsize', fontsize, 'fontweight', fontweight);
-%         legend('f', 'z');	
-%         xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
-%         ylabel('f and z', 'fontsize', fontsize, 'fontweight', fontweight);
-%         hold off;
-% 
-%         subplot 212;
-%         plot(simtime, wo_len, 'linewidth', linewidth);
-%         xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
-%         ylabel('|w|', 'fontsize', fontsize, 'fontweight', fontweight);
-%         legend('|w|');
-%         pause(0.5);	
-%        
-%     end
+    if mod(ti, nsecs/2) == 0
+        disp(['time: ' num2str(t,3) '.']);
+        subplot 211;
+        plot(simtime, ft, 'linewidth', linewidth, 'color', 'green');
+        hold on;
+        plot(simtime, zt, 'linewidth', linewidth, 'color', 'red');
+        title('training', 'fontsize', fontsize, 'fontweight', fontweight);
+        legend('f', 'z');	
+        xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
+        ylabel('f and z', 'fontsize', fontsize, 'fontweight', fontweight);
+        hold off;
+
+        subplot 212;
+        plot(simtime, wo_len, 'linewidth', linewidth);
+        xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
+        ylabel('|w|', 'fontsize', fontsize, 'fontweight', fontweight);
+        legend('|w|');
+        pause(0.5);	
+    end
     
     % sim, so x(t) and r(t) are created.
     x = (1.0-dt)*x + M*(r*dt) + wf*(z*dt);
@@ -102,17 +101,9 @@ for t = simtime
     if mod(ti, learn_every) == 0
 	% update inverse correlation matrix
 	k = P*r;
-    
-    sum(k, 'all')
-    
 	rPr = r'*k;
-	c = 1.0/(1.0 + rPr)
-    
-    sum(k*(k'*c), 'all')
-    
+	c = 1.0/(1.0 + rPr);
 	P = P - k*(k'*c);
-    
-    sum(P,'all')
     
 	% update the error for the linear readout
 	e = z-ft(ti);

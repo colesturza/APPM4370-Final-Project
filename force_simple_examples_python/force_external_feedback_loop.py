@@ -1,8 +1,13 @@
+# FORCE.m
+#
+# This function generates the sum of 4 sine waves in figure 2D using the architecture of figure 1A with the RLS
+# learning rule.
+#
+# written by David Sussillo originally in matlab
+
 import numpy as np
 from scipy.sparse import random
 import matplotlib.pyplot as plt
-
-# Code from force_external_feedback_loop.m written in python
 
 linewidth = 3
 fontsize = 14
