@@ -70,27 +70,30 @@ z = z0;
 figure;
 ti = 0;
 P = (1.0/alpha)*eye(nRec2Out);
+sum(P,'all')
 for t = simtime
     ti = ti+1;	
     
     if mod(ti, nsecs/2) == 0
-	disp(['time: ' num2str(t,3) '.']);
-	subplot 211;
-	plot(simtime, ft, 'linewidth', linewidth, 'color', 'green');
-	hold on;
-	plot(simtime, zt, 'linewidth', linewidth, 'color', 'red');
-	title('training', 'fontsize', fontsize, 'fontweight', fontweight);
-	legend('f', 'z');	
-	xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
-	ylabel('f and z', 'fontsize', fontsize, 'fontweight', fontweight);
-	hold off;
-	
-	subplot 212;
-	plot(simtime, wo_len, 'linewidth', linewidth);
-	xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
-	ylabel('|w|', 'fontsize', fontsize, 'fontweight', fontweight);
-	legend('|w|');
-	pause(0.5);	
+        disp(['time: ' num2str(t,3) '.']);
+        subplot 211;
+        plot(simtime, ft, 'linewidth', linewidth, 'color', 'green');
+        hold on;
+        plot(simtime, zt, 'linewidth', linewidth, 'color', 'red');
+        title('training', 'fontsize', fontsize, 'fontweight', fontweight);
+        legend('f', 'z');	
+        xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
+        ylabel('f and z', 'fontsize', fontsize, 'fontweight', fontweight);
+        hold off;
+
+        subplot 212;
+        plot(simtime, wo_len, 'linewidth', linewidth);
+        xlabel('time', 'fontsize', fontsize, 'fontweight', fontweight);
+        ylabel('|w|', 'fontsize', fontsize, 'fontweight', fontweight);
+        legend('|w|');
+        pause(0.5);	
+        
+        sum(P,'all')
     end
     
     % sim, so x(t) and r(t) are created.
