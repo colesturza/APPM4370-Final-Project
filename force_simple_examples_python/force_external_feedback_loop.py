@@ -66,8 +66,9 @@ x = x0
 r = np.tanh(x)
 z = z0
 
-fig, axs = plt.subplots(2,1, figsize=(20,20))
-print('time: 0.')
+fig, axs = plt.subplots(2,1)
+fig.set_tight_layout(True)
+print('time: 0.000.')
 line1, = axs[0].plot(simtime, ft, lw=linewidth, c='green')
 line2, = axs[0].plot(simtime, zt, lw=linewidth, c='red')
 axs[0].set_title('training', fontsize=fontsize, fontweight=fontweight)
@@ -142,7 +143,8 @@ for ti, t in enumerate(simtime):				# don't want to subtract time in indices
 error_avg = np.sum(np.abs(zpt-ft2))/simtime_len
 print('Testing MAE: {:.3f}'.format(error_avg))
 
-fig, axs = plt.subplots(2,1, figsize=(20,20))
+fig, axs = plt.subplots(2,1)
+fig.set_tight_layout(True)
 axs[0].plot(simtime, ft, lw=linewidth, c='green')
 axs[0].plot(simtime, zt, lw=linewidth, c='red')
 axs[0].set_title('training', fontsize=fontsize, fontweight=fontweight)
