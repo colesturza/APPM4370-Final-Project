@@ -67,22 +67,39 @@ r = np.tanh(x)
 z = z0
 
 fig, axs = plt.subplots(2,1, figsize=(20,20))
+print('time: 0.')
+line1, = axs[0].plot(simtime, ft, lw=linewidth, c='green')
+line2, = axs[0].plot(simtime, zt, lw=linewidth, c='red')
+axs[0].set_title('training', fontsize=fontsize, fontweight=fontweight)
+axs[0].legend(['f', 'z'])
+axs[0].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
+axs[0].set_ylabel('f and z', fontsize=fontsize, fontweight=fontweight)
+
+line3, = axs[1].plot(simtime, wo_len, lw=linewidth)
+axs[1].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
+axs[1].set_ylabel('|w|', fontsize=fontsize, fontweight=fontweight)
+axs[1].legend(['|w|'])
+
+fig.canvas.draw()
+plt.show(block=False)
+
 P = (1.0/alpha)*np.eye(nRec2Out)
 for ti, t in enumerate(simtime):
 
     if (ti+1) % (nsecs/2) == 0:
         print('time: {:.3f}.'.format(t))
-        axs[0].plot(simtime, ft, lw=linewidth, c='green')
-        axs[0].plot(simtime, zt, lw=linewidth, c='red')
-        axs[0].set_title('training', fontsize=fontsize, fontweight=fontweight)
-        axs[0].legend(['f', 'z'])
-        axs[0].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
-        axs[0].set_ylabel('f and z', fontsize=fontsize, fontweight=fontweight)
+        line1.set_ydata(ft)
+        line2.set_ydata(zt)
+        line3.set_ydata(wo_len)
 
-        axs[1].plot(simtime, wo_len, lw=linewidth)
-        axs[1].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
-        axs[1].set_ylabel('|w|', fontsize=fontsize, fontweight=fontweight)
-        axs[1].legend(['|w|'])
+        axs[0].relim()
+        axs[0].autoscale_view(True,True,True)
+
+        axs[1].relim()
+        axs[1].autoscale_view(True,True,True)
+
+        fig.canvas.draw()
+        plt.pause(0.5)
 
     # sim, so x(t) and r(t) are created.
     x = (1.0-dt)*x + M.dot(r*dt) + wf*(z*dt)
@@ -107,8 +124,6 @@ for ti, t in enumerate(simtime):
     # Store the output of the system.
     zt[ti] = z
     wo_len[ti] = np.sqrt(wo.dot(wo))
-
-plt.show()
 
 error_avg = np.sum(np.abs(zt-ft))/simtime_len
 print('Training MAE: {:.3f}'.format(error_avg))
