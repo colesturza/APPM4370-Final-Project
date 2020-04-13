@@ -55,7 +55,7 @@ class Force:
 
         for ti, t in enumerate(simtime):
             # sim, so x(t) and r(t) are created.
-            self.x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.wf*(self.z*dt)
+            self.x = (1.0-dt)*self.x + self.W_int.dot(r*dt) + self.wf*(self.z*dt)
             r = self.activation(self.x)
             self.z = self.W_out.dot(r)
 
