@@ -49,6 +49,7 @@ class Force:
 
         #Not sure about this
         #NOTE: Why are we calculating this here if we recalculate a few lines down
+        #Response to NOTE: It's because we need r in line 59, then recalculate r with new x
         r = self.activation(self.x)
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
