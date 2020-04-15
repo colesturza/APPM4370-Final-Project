@@ -10,6 +10,7 @@ class Force:
         self.p = p #Sparsity (i.e number of recurrent connections per neuron)
         self.g = g #Chaos in the network, g>1 leads to chaos
         self.activation = activation #Output layer activation
+        self.readouts = readouts # Number of readouts
 
         scale = 1.0/np.sqrt(p*N) #Scale of internal network connections
 
@@ -96,7 +97,6 @@ class Force:
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
     def predict(self, x, start, end, dt):
-
         simtime = np.arange(start, end, dt)
         simtime_len = len(simtime)
 
