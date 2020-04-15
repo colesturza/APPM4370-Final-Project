@@ -122,7 +122,7 @@ class Force:
     #NOTE: Should check on all of this stuff
     def evaluate(self, start, end, dt, func_learned):
 
-        x = 0.5*np.random.randn(N)
+        x = 0.5*np.random.randn(self.N)
         t, zpt = self.predict(x, start, end, dt)
 
         simtime_len = len(zpt)
