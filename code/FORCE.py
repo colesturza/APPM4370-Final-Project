@@ -99,6 +99,7 @@ class Force:
 ################################################################################
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
+    #NOTE: Should check on all of this stuff
     def predict(self, start, end, dt):
 
         simtime = np.arange(start, end, dt)
@@ -124,6 +125,7 @@ class Force:
 ################################################################################
     #Evaluate the neural network
     #NOTE: Need to consider multiple readouts and inputs
+    #NOTE: Should check on all of this stuff
     def evaluate(self, start, end, dt, func_learned):
 
         t, zpt = self.predict(start, end, dt)
