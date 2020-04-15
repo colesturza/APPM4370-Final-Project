@@ -48,7 +48,7 @@ class Force:
     #Okay so now we are leanrning
         #x is pre-activation and z is readout
         #NOTE: Check in to these
-        x = 0.5*np.random.randn(N)
+        x = 0.5*np.random.randn(self.N)
         z = 0.5*np.random.randn()
 
         #post-activation
