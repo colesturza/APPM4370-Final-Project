@@ -105,7 +105,7 @@ class Force:
         r = self.activation(x)
         z = self.W_out.dot(r)
 
-        for ti range(len(simtime)):
+        for ti in range(len(simtime)):
 
             # sim, so x(t) and r(t) are created.
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed*(z*dt)
