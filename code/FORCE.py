@@ -23,7 +23,7 @@ class Force:
         self.W_out = np.zeros(N) #Readout weights
 
         #Feedback weights
-        #NOTE: Check on this initialization
+        #NOTE: Shifts the distribution to mean of zero
         self.W_feed = 2.0*(np.random.rand(N)-0.5)
 
 ################################################################################
@@ -34,16 +34,14 @@ class Force:
         dW_out = np.zeros(self.N) #Weight update vector
 
         #Simulation time and length of that vector
-        #NOTE: What if we aren't learning time dependent function.
-        #What if we are learning some input dependent function
+        #NOTE: I suppose we are only learning time dependent funcs
         simtime = np.arange(0, nsecs, dt)
         simtime_len = len(simtime)
 
         ft = func_to_learn(simtime) #Function being learned (vector)
 
-        #Not sure what this is
-        #NOTE: I think this vector of ouput weights or something
-        wo_len = np.zeros(simtime_len)
+        #Magnitude of weights as we learn
+        W_out_mag = np.zeros(simtime_len)
 
         zt = np.zeros(simtime_len) #Essentially the output function (vector)
 
@@ -60,7 +58,7 @@ class Force:
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         #Iterate and train the network
-        for ti, t in enumerate(simtime):
+        for ti in range(len(simtime)):
             # sim, so x(t) and r(t) are created.
             #NOTE: Check in to this stuff
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed*(z*dt)
@@ -84,34 +82,30 @@ class Force:
             #Store the output of the system.
             zt[ti] = z
 
-            #Magnitude of weights? Whats going on here
-            #NOTE: Look into this
-            wo_len[ti] = np.sqrt(self.W_out.dot(self.W_out))
+            #Magnitude of weights
+            W_out_mag[ti] = np.linalg.norm(self.W_out)
 
         #Average error after learning
         error_avg = np.sum(np.abs(zt-ft))/simtime_len
         print('Training MAE: {:.3f}'.format(error_avg))
 
-        #Return the training progression I think
-        #NOTE: Look into this
-        return zt, wo_len
+        #Return the training progression
+        return zt, W_out_mag
 
 ################################################################################
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
-    #NOTE: Should check on all of this stuff
-    def predict(self, start, end, dt):
+    def predict(self, x, start, end, dt):
 
         simtime = np.arange(start, end, dt)
         simtime_len = len(simtime)
 
         zpt = np.zeros(simtime_len)
 
-        x = self.x
         r = self.activation(x)
         z = self.W_out.dot(r)
 
-        for ti, t in enumerate(simtime):
+        for ti range(len(simtime)):
 
             # sim, so x(t) and r(t) are created.
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed*(z*dt)
@@ -120,7 +114,7 @@ class Force:
 
             zpt[ti] = z
 
-        return t, zpt
+        return simtime, zpt
 
 ################################################################################
     #Evaluate the neural network
@@ -128,11 +122,12 @@ class Force:
     #NOTE: Should check on all of this stuff
     def evaluate(self, start, end, dt, func_learned):
 
-        t, zpt = self.predict(start, end, dt)
+        x = 0.5*np.random.randn(N)
+        t, zpt = self.predict(x, start, end, dt)
 
         simtime_len = len(zpt)
 
-        ft = func_to_learn(t)
+        ft = func_learned(t)
 
         error_avg = np.sum(np.abs(zpt-ft))/simtime_len
         print('Testing MAE: {:.3f}'.format(error_avg))
