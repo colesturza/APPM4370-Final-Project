@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.sparse import random
+import matplotlib.pyplot as plt
 
 class Force:
     #Set up network parameters and structure
@@ -91,7 +92,7 @@ class Force:
         print('Training MAE: {:.3f}'.format(error_avg))
 
         #Return the training progression
-        return zt, W_out_mag
+        return zt, W_out_mag, x
 
 ################################################################################
     #Use the trained neural network predict or generate
@@ -120,9 +121,8 @@ class Force:
     #Evaluate the neural network
     #NOTE: Need to consider multiple readouts and inputs
     #NOTE: Should check on all of this stuff
-    def evaluate(self, start, end, dt, func_learned):
+    def evaluate(self, x, start, end, dt, func_learned):
 
-        x = 0.5*np.random.randn(self.N)
         t, zpt = self.predict(x, start, end, dt)
 
         simtime_len = len(zpt)
