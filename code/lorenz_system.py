@@ -7,6 +7,9 @@ linewidth = 3
 fontsize = 14
 fontweight = 'bold'
 
+nsecs = 100
+step = 0.01
+
 # RK4 Integrator
 def RK4(dt, t0, tf, V0, dV):
 
@@ -35,11 +38,11 @@ def compute_derivatives(t, state):
     return np.array([a * (y - x), x * (r - z) - y, x * y - b * z])  # Derivatives
 
 V0 = np.array([0, 1, 2])
-T, V = RK4(0.01, 0, 1700, V0, compute_derivatives)
+T, V = RK4(step, 0, nsecs, V0, compute_derivatives)
 
 rnn = Force(N=1500,g=1.56,readouts=3)
 
-zt, W_out_mag, x = rnn.fit(V[:140001], 1550, dt=0.01)
+zt, W_out_mag, x = rnn.fit(V, nsecs, dt=step)
 
 fig2, ax2 = plt.subplots()
 fig2.set_tight_layout(True)
@@ -48,14 +51,14 @@ ax2.set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
 ax2.set_ylabel('|w|', fontsize=fontsize, fontweight=fontweight)
 ax2.legend(['|w|'])
 
-simtime, zpt = rnn.predict(x, 1550, 1700, 0.01)
-avg_error = rnn.evaluate(x, 1550, 1700, 0.01,  V[140001:])
+simtime, zpt = rnn.predict(x, nsecs, nsecs*2, step)
+avg_error = rnn.evaluate(x, nsecs, nsecs*2, step, V)
 
 fig1 = plt.figure()
 fig1.set_tight_layout(True)
 ax1 = fig1.gca(projection='3d')
-ax1.plot(V[140001:], V[140001:], V[140001:], lw=linewidth)
-ax1.plot(zpt, zpt, zpt, lw=linewidth)
+ax1.plot(V[:,0], V[:,1], V[:,2], lw=linewidth)
+ax1.plot(zpt[:,0], zpt[:,1], zpt[:,2], lw=linewidth)
 ax1.set_title('training', fontsize=fontsize, fontweight=fontweight)
 ax1.legend(['actual', 'z'])
 ax1.set_xlabel('x', fontsize=fontsize, fontweight=fontweight)
