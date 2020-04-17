@@ -13,11 +13,12 @@ simtime_len = len(simtime)
 #simtime2 = np.arange(1*nsecs, 2*nsecs, dt) # 1*nsecs:dt:2*nsecs-dt;
 
 def func(simtime):
+    simtime_len = len(simtime)
     amp = 1.3
     freq = 1/60
     ft = (amp/1.0)*np.sin(1.0*np.pi*freq*simtime)
     ft = ft/1.5
-    return ft
+    return ft.reshape((simtime_len, 1))
 
 rnn = Force(g=1.25)
 

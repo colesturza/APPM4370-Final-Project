@@ -22,11 +22,11 @@ class Force:
         #NOTE: Need to deal with potentially more readouts
         #NOTE: This could be random, but it might not matter as any kinks will
         #get fixed once training starts.
-        self.W_out = np.zeros(N) #Readout weights
+        self.W_out = np.zeros((N, readouts)) #Readout weights
 
         #Feedback weights
         #NOTE: Shifts the distribution to mean of zero
-        self.W_feed = 2.0*(np.random.rand(N)-0.5)
+        self.W_feed = 2.0*(np.random.rand(N, readouts)-0.5)
 
 ################################################################################
     #Train the network on specified function
@@ -43,15 +43,15 @@ class Force:
         ft = func_to_learn(simtime) #Function being learned (vector)
 
         #Magnitude of weights as we learn
-        W_out_mag = np.zeros(simtime_len)
+        W_out_mag = np.zeros((simtime_len, self.readouts))
 
-        zt = np.zeros(simtime_len) #Essentially the output function (vector)
+        zt = np.zeros((simtime_len, self.readouts)) #Essentially the output function (vector)
 
     #Okay so now we are leanrning
         #x is pre-activation and z is readout
         #NOTE: Check in to these
-        x = 0.5*np.random.randn(self.N)
-        z = 0.5*np.random.randn()
+        x = 0.5*np.random.randn(self.N, 1)
+        z = 0.5*np.random.randn(self.readouts, 1)
 
         #post-activation
         #NOTE: Could calculate this from parameters
@@ -63,32 +63,32 @@ class Force:
         for ti in range(len(simtime)):
             # sim, so x(t) and r(t) are created.
             #NOTE: Check in to this stuff
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed*(z*dt)
+            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
             r = self.activation(x)
-            z = self.W_out.dot(r)
+            z = self.W_out.T.dot(r)
 
             if (ti+1) % learn_every == 0:
                 #Update inverse correlation matrix
                 k = P.dot(r)
-                rPr = r.dot(k)
+                rPr = r.T.dot(k)
                 c = 1.0/(1.0 + rPr)
                 P = P - np.outer(k, k * c)
 
                 #Update the error for the linear readout
-                e = z - ft[ti]
+                e = z - ft[ti].reshape((self.readouts, 1))
 
                 #Update the output weights
-                dW_out = -e * k * c
+                dW_out = -k.dot(e.T) * c
                 self.W_out = self.W_out + dW_out
 
             #Store the output of the system.
-            zt[ti] = z
+            zt[ti,:] = z.reshape(self.readouts)
 
             #Magnitude of weights
-            W_out_mag[ti] = np.linalg.norm(self.W_out)
+            W_out_mag[ti,:] = np.linalg.norm(self.W_out, axis=0)
 
         #Average error after learning
-        error_avg = np.sum(np.abs(zt-ft))/simtime_len
+        error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
         print('Training MAE: {:.3f}'.format(error_avg))
 
         #Return the training progression
@@ -101,19 +101,19 @@ class Force:
         simtime = np.arange(start, end, dt)
         simtime_len = len(simtime)
 
-        zpt = np.zeros(simtime_len)
+        zpt = np.zeros((simtime_len, self.readouts))
 
         r = self.activation(x)
-        z = self.W_out.dot(r)
+        z = self.W_out.T.dot(r)
 
         for ti in range(len(simtime)):
 
             # sim, so x(t) and r(t) are created.
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed*(z*dt)
+            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
             r = self.activation(x)
-            z = self.W_out.dot(r)
+            z = self.W_out.T.dot(r)
 
-            zpt[ti] = z
+            zpt[ti,:] = z.reshape(self.readouts)
 
         return simtime, zpt
 
@@ -129,7 +129,7 @@ class Force:
 
         ft = func_learned(t)
 
-        error_avg = np.sum(np.abs(zpt-ft))/simtime_len
+        error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
         print('Testing MAE: {:.3f}'.format(error_avg))
 
         return error_avg
