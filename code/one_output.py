@@ -1,6 +1,5 @@
 from FORCE import Force
 import numpy as np
-from scipy.sparse import random
 import matplotlib.pyplot as plt
 
 linewidth = 3

@@ -40,7 +40,10 @@ class Force:
         simtime = np.arange(0, nsecs, dt)
         simtime_len = len(simtime)
 
-        ft = func_to_learn(simtime) #Function being learned (vector)
+        if callable(func_to_learn):
+            ft = func_to_learn(simtime) #Function being learned (vector)
+        else:
+            ft = func_to_learn #Input is an array
 
         #Magnitude of weights as we learn
         W_out_mag = np.zeros((simtime_len, self.readouts))
@@ -123,11 +126,14 @@ class Force:
     #NOTE: Should check on all of this stuff
     def evaluate(self, x, start, end, dt, func_learned):
 
-        t, zpt = self.predict(x, start, end, dt)
+        simtime, zpt = self.predict(x, start, end, dt)
 
         simtime_len = len(zpt)
 
-        ft = func_learned(t)
+        if callable(func_learned):
+            ft = func_learned(simtime) #Function being learned (vector)
+        else:
+            ft = func_learned #Input is an array
 
         error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
         print('Testing MAE: {:.3f}'.format(error_avg))
