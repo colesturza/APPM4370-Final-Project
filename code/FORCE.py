@@ -31,13 +31,12 @@ class Force:
 ################################################################################
     #Train the network on specified function
     #NOTE: Need to implement multiple readuts and inputs
-    def fit(self, func_to_learn, nsecs, *, alpha=1.0, dt=0.1, learn_every=2):
+    def fit(self, func_to_learn, simtime, *, alpha=1.0, dt=0.1, learn_every=2):
     #Setting up some stuff
         dW_out = np.zeros(self.N) #Weight update vector
 
         #Simulation time and length of that vector
         #NOTE: I suppose we are only learning time dependent funcs
-        simtime = np.arange(0, nsecs, dt)
         simtime_len = len(simtime)
 
         if callable(func_to_learn):
