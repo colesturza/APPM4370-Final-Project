@@ -30,7 +30,7 @@ class Force:
 ################################################################################
     #Train the network on specified function
     #NOTE: Need to implement multiple readuts and inputs
-    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2):
+    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2, return_corr=False):
 
     #Setting up some stuff
 
@@ -76,6 +76,9 @@ class Force:
         #NOTE: Could calculate this from parameters
         r = self.activation(x)
 
+        #Correlation matrix for PCA analysis
+        corr_mat = np.outer(r, r) + alpha*np.eye(self.N)
+
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         #Iterate and train the network
@@ -101,6 +104,9 @@ class Force:
                 dW_out = -k.dot(e.T) * c
                 self.W_out = self.W_out + dW_out
 
+            #Update correlation matrix for PCA analysis
+            corr_mat += np.outer(r, r)
+
             #Store the output of the system.
             zt[ti,:] = z.reshape(self.readouts)
 
@@ -112,6 +118,11 @@ class Force:
         print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
+
+        if return_corr:
+            return zt, W_out_mag, x, corr_mat
+
+
         return zt, W_out_mag, x
 
 ################################################################################
