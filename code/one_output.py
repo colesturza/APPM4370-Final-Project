@@ -6,10 +6,11 @@ linewidth = 3
 fontsize = 14
 fontweight = 'bold'
 
+dt = 0.1
 nsecs = 1000
-simtime = np.arange(0, nsecs, 0.1) # 0:dt:nsecs-dt;
+simtime = np.arange(0, nsecs, dt)
 simtime_len = len(simtime)
-#simtime2 = np.arange(1*nsecs, 2*nsecs, dt) # 1*nsecs:dt:2*nsecs-dt;
+simtime2 = np.arange(1*nsecs, 2*nsecs, dt)
 
 def func(simtime):
     amp = 1.3
@@ -20,7 +21,7 @@ def func(simtime):
 
 rnn = Force(g=1.25)
 
-zt, W_out_mag, x = rnn.fit(func, nsecs)
+zt, W_out_mag, x = rnn.fit(simtime, func)
 
 fig1, axs = plt.subplots(2,1)
 fig1.set_tight_layout(True)
@@ -36,14 +37,14 @@ axs[1].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
 axs[1].set_ylabel('|w|', fontsize=fontsize, fontweight=fontweight)
 axs[1].legend(['|w|'])
 
-simtime, zpt = rnn.predict(x, nsecs, nsecs*2, 0.1)
-avg_error = rnn.evaluate(x, nsecs, nsecs*2, 0.1, func)
+zpt = rnn.predict(x, simtime2)
+avg_error = rnn.evaluate(x, simtime2, func)
 
 fig2, ax = plt.subplots()
 fig2.set_tight_layout(True)
-line1, = ax.plot(simtime, func(simtime), lw=linewidth, c='green')
-line2, = ax.plot(simtime, zpt, lw=linewidth, c='red')
-ax.set_title('testing --- Average Error = {}'.format(avg_error), fontsize=fontsize, fontweight=fontweight)
+line1, = ax.plot(simtime2, func(simtime2), lw=linewidth, c='green')
+line2, = ax.plot(simtime2, zpt, lw=linewidth, c='red')
+ax.set_title('testing -- Average Error = {:.5f}'.format(avg_error), fontsize=fontsize, fontweight=fontweight)
 ax.legend(['f', 'z'])
 ax.set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
 ax.set_ylabel('f and z', fontsize=fontsize, fontweight=fontweight)
