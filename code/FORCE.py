@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.sparse import random
-import matplotlib.pyplot as plt
 
 class Force:
     #Set up network parameters and structure
@@ -31,25 +30,43 @@ class Force:
 ################################################################################
     #Train the network on specified function
     #NOTE: Need to implement multiple readuts and inputs
-    def fit(self, func_to_learn, simtime, *, alpha=1.0, dt=0.1, learn_every=2):
+    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2):
+
     #Setting up some stuff
-        dW_out = np.zeros(self.N) #Weight update vector
 
-        #Simulation time and length of that vector
         #NOTE: I suppose we are only learning time dependent funcs
-        simtime_len = len(simtime)
+        #Simulation time and length of that vector
+        simtime_len = simtime.shape[0]
 
+        diff = np.diff(simtime)
+        if not np.any(np.isclose(diff, diff[0])):
+            raise ValueError('All values in simtime must be evenly spaced.')
+
+        dt = diff[0]
+
+        #Weight update vector
+        dW_out = np.zeros((self.N, self.readouts))
+
+        #Check if func_to_learn is either a callable function or an
+        #ndarray of values to learn.
         if callable(func_to_learn):
             ft = func_to_learn(simtime) #Function being learned (vector)
-        else:
+        elif type(func_to_learn) is np.ndarray:
             ft = func_to_learn #Input is an array
+        else:
+            raise ValueError("""func_to_learn must either be a callable function
+                or a numpy ndarray of shape (n, {}).""".format(self.readouts))
+
+        ft = ft.reshape((simtime_len, self.readouts))
 
         #Magnitude of weights as we learn
         W_out_mag = np.zeros((simtime_len, self.readouts))
 
-        zt = np.zeros((simtime_len, self.readouts)) #Essentially the output function (vector)
+        #Essentially the output function (vector)
+        zt = np.zeros((simtime_len, self.readouts))
 
     #Okay so now we are leanrning
+
         #x is pre-activation and z is readout
         #NOTE: Check in to these
         x = 0.5*np.random.randn(self.N, 1)
@@ -62,7 +79,8 @@ class Force:
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         #Iterate and train the network
-        for ti in range(len(simtime)):
+        for ti in range(simtime_len):
+
             # sim, so x(t) and r(t) are created.
             #NOTE: Check in to this stuff
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
@@ -91,7 +109,7 @@ class Force:
 
         #Average error after learning
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
-        print('Training MAE: {:.3f}'.format(error_avg))
+        print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
         return zt, W_out_mag, x
@@ -99,16 +117,22 @@ class Force:
 ################################################################################
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
-    def predict(self, x, start, end, dt):
-        simtime = np.arange(start, end, dt)
-        simtime_len = len(simtime)
+    def predict(self, x, simtime):
+
+        simtime_len = simtime.shape[0]
+
+        diff = np.diff(simtime)
+        if not np.any(np.isclose(diff, diff[0])):
+            raise ValueError('All values in simtime must be evenly spaced.')
+
+        dt = diff[0]
 
         zpt = np.zeros((simtime_len, self.readouts))
 
         r = self.activation(x)
         z = self.W_out.T.dot(r)
 
-        for ti in range(len(simtime)):
+        for ti in range(simtime_len):
 
             # sim, so x(t) and r(t) are created.
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
@@ -117,24 +141,33 @@ class Force:
 
             zpt[ti,:] = z.reshape(self.readouts)
 
-        return simtime, zpt
+        return zpt
 
 ################################################################################
     #Evaluate the neural network
     #NOTE: Need to consider multiple readouts and inputs
     #NOTE: Should check on all of this stuff
-    def evaluate(self, x, start, end, dt, func_learned):
+    def evaluate(self, x, simtime, func_learned):
 
-        simtime, zpt = self.predict(x, start, end, dt)
+        zpt = self.predict(x, simtime)
 
-        simtime_len = len(zpt)
+        #NOTE: I suppose we are only learning time dependent funcs
+        #Simulation time and length of that vector
+        simtime_len = simtime.shape[0]
 
+        #Check if func_to_learn is either a callable function or an
+        #ndarray of values to learn.
         if callable(func_learned):
             ft = func_learned(simtime) #Function being learned (vector)
-        else:
+        elif type(func_learned) is np.ndarray:
             ft = func_learned #Input is an array
+        else:
+            raise ValueError("""func_learned must either be a callable function
+                or a numpy ndarray of shape (n, {}).""".format(self.readouts))
+
+        ft = ft.reshape((simtime_len, self.readouts))
 
         error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
-        print('Testing MAE: {:.3f}'.format(error_avg))
+        print('Testing MAE: {:.5f}'.format(error_avg))
 
         return error_avg
