@@ -6,7 +6,7 @@ linewidth = 3
 fontsize = 14
 fontweight = 'bold'
 
-nsecs = 1000
+nsecs = 100
 step = 0.01
 
 # RK4 Integrator
@@ -39,9 +39,9 @@ def compute_derivatives(t, state):
 V0 = np.array([0, 1, 2])
 T, V = RK4(step, 0, nsecs, V0, compute_derivatives)
 
-rnn = Force(N=1500,g=1.56,readouts=1)
+rnn = Force(N=1000,g=1.5,readouts=1)
 
-lorenz = V[:,0].reshape((V[:,0].shape[0], 1))
+lorenz = (V[:,0].reshape((V[:,0].shape[0], 1)))/10
 
 zt, W_out_mag, x = rnn.fit(lorenz, nsecs, dt=step)
 
@@ -59,8 +59,8 @@ axs[1].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
 axs[1].set_ylabel('|w|', fontsize=fontsize, fontweight=fontweight)
 axs[1].legend(['|w|'])
 
-simtime, zpt = rnn.predict(x, nsecs, nsecs*2, 0.01)
-avg_error = rnn.evaluate(x, nsecs, nsecs*2, 0.01, V[:,0])
+simtime, zpt = rnn.predict(x, nsecs, nsecs*2, step)
+avg_error = rnn.evaluate(x, nsecs, nsecs*2, step, lorenz)
 
 fig2, ax = plt.subplots()
 fig2.set_tight_layout(True)
