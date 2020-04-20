@@ -30,9 +30,7 @@ def sinwaves(simtime, num_waves, amp=[1.0], freq=[1/np.pi], noise=False):
 
 #Fig 2A, 2B, and 2C
 #
-def sawtooth():
-    nsecs = 3000
-    dt = 0.1
+def sawtooth(nsecs, dt):
 
     rnn = Force(g=g_int)
 
@@ -47,9 +45,7 @@ def sawtooth():
 
 #Fig 2D
 #4 sinusoids
-def periodic():
-    nsecs = 3000
-    dt = 0.1
+def periodic(nsecs, dt):
 
     rnn = Force(g=g_int)
 
@@ -66,9 +62,7 @@ def periodic():
 
 #2E
 #16 sinusoids
-def periodic_cmplx():
-    nsecs = 1000
-    dt = 0.1
+def periodic_cmplx(nsecs, dt):
 
     rnn = Force(g=g_int)
 
@@ -84,9 +78,7 @@ def periodic_cmplx():
 
 #2F
 #4 sinusoids w/ noise
-def noisy():
-    nsecs = 1000
-    dt = 0.1
+def noisy(nsecs, dt):
 
     rnn = Force(g=g_int)
 
@@ -102,9 +94,7 @@ def noisy():
 
 #2G
 #square wave
-def discont():
-    nsecs = 3000
-    dt = 0.1
+def discont(nsecs, dt):
 
     rnn = Force(g=g_int)
 
