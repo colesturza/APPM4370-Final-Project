@@ -19,7 +19,7 @@ def sinwaves(simtime, num_waves, amp=[1.0], freq=[1/np.pi], noise=False):
     f = np.zeros(len(simtime))
 
     if noise:
-        G = np.random.randn(len(simtime), num_waves)
+        G = np.random.randn(len(simtime), num_waves)/10.0
     else:
         G = np.ones((len(simtime), num_waves))
 
@@ -28,20 +28,39 @@ def sinwaves(simtime, num_waves, amp=[1.0], freq=[1/np.pi], noise=False):
 
     return f.reshape((len(simtime),1))
 
-#Fig 2A, 2B, and 2C
-#
-def sawtooth(nsecs, dt):
-
+#Basic sinwave
+def basic(nsecs, dt):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, nsecs, dt)
-    f = sig.sawtooth(simtime*(12*np.pi/nsecs), width=0.5)
-    f.reshape((len(simtime), 1))
+    amp = np.array([1])
+    freq = np.array([1])
+    freq = freq*12/nsecs
+    f = sinwaves(simtime, 1, amp, freq)
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime)
 
     return f, [zt, Wmag], [simtime, zpt]
+
+#Fig 2A, 2B, and 2C
+#
+def triangle(nsecs, dt):
+
+    rnn = Force(g=g_int)
+
+    simtime = np.arange(0, nsecs, dt)
+    simtime2 = np.arange(nsecs, nsecs*2, dt)
+
+    f = sig.sawtooth(simtime*(10.0*np.pi/nsecs), width=0.5)
+    f.reshape((len(simtime), 1))
+    f2 = sig.sawtooth(simtime*(10.0*np.pi/nsecs), width=0.5)
+    f2.reshape((len(simtime), 1))
+
+    zt, Wmag, x = rnn.fit(simtime, f)
+    zpt = rnn.predict(x, simtime2)
+
+    return [f, f2] , [zt, Wmag], [simtime, zpt]
 
 #Fig 2D
 #4 sinusoids
@@ -50,15 +69,17 @@ def periodic(nsecs, dt):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, nsecs, dt)
-    amp = np.array([1,1.5,1,1])
-    freq = np.array([1,1,2,3])
-    freq = freq*12/nsecs
-    f = sinwaves(simtime, 4, amp, freq)
+    simtime2 = np.arange(nsecs, nsecs*2, dt)
+
+    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0]) * 1.3
+    freq = np.array([1.0, 2.0, 5.0, 6.0]) * 10.0 / nsecs
+    f = sinwaves(simtime, 4, amp, freq)/1.5
+    f2 = sinwaves(simtime2, 4, amp, freq)/1.5
 
     zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime)
+    zpt = rnn.predict(x, simtime2)
 
-    return f, [zt, Wmag], [simtime, zpt]
+    return [f, f2], [zt, Wmag], [simtime, zpt]
 
 #2E
 #16 sinusoids
@@ -67,14 +88,28 @@ def periodic_cmplx(nsecs, dt):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, nsecs, dt)
-    amp = np.random.uniform(0, 1, size=16)
-    freq = np.random.uniform(0, 1, size=16)
-    f = sinwaves(simtime, 16, amp, freq)
+    simtime2 = np.arange(nsecs, nsecs*2, dt)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime)
+    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0,
+                    1.0/2.5, 1.0/7.0, 1.0/3.2, 1.0/4.0,
+                    1.0/1.5, 1.0/5.0, 1.0/1.2, 1.0/3.4,
+                    1.0/4.7, 1.0/6.9, 1.0/10.0, 1.0/3.8]) * 1.3
+    freq = np.array([1.0, 2.0, 3.0, 6.0,
+                    2.5, 7.0, 3.2, 4.0,
+                    1.5, 5.0, 1.2, 3.4,
+                    4.7, 6.9, 10.0, 3.8]) * 10.0 / nsecs
 
-    return f, [zt, Wmag], [simtime, zpt]
+    f = sinwaves(simtime, 16, amp, freq)/1.5
+    f2 = sinwaves(simtime2, 16, amp, freq)/1.5
+
+    # zt, Wmag, x = rnn.fit(simtime, f)
+    # zpt = rnn.predict(x, simtime2)
+    zt = 0
+    Wmag = 0
+    x = 0
+    zpt = 0
+
+    return [f, f2], [zt, Wmag], [simtime, zpt]
 
 #2F
 #4 sinusoids w/ noise
@@ -83,14 +118,21 @@ def noisy(nsecs, dt):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, nsecs, dt)
-    amp = [1,1.5,1,1]
-    freq = [1,1,2,3]
-    f = sinwaves(simtime, 4, amp, freq, noise=True)
+    simtime2 = np.arange(nsecs, nsecs*2, dt)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime)
+    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0])*1.3
+    freq = np.array([1.0, 2.0, 3.0, 4.0])*10.0/nsecs
+    f = sinwaves(simtime, 4, amp, freq, noise=True)/1.5
+    f2 = sinwaves(simtime2, 4, amp, freq, noise=True)/1.5
 
-    return f, [zt, Wmag], [simtime, zpt]
+    # zt, Wmag, x = rnn.fit(simtime, f)
+    # zpt = rnn.predict(x, simtime2)
+    zt = 0
+    Wmag = 0
+    x = 0
+    zpt = 0
+
+    return [f, f2], [zt, Wmag], [simtime, zpt]
 
 #2G
 #square wave
@@ -99,13 +141,17 @@ def discont(nsecs, dt):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, nsecs, dt)
+    simtime2 = np.arange(nsecs, nsecs*2, dt)
+
     f = sig.square(simtime/50)
     f.reshape(len(simtime), 1)
+    f2 = sig.square(simtime2/50)
+    f2.reshape(len(simtime2), 1)
 
     zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime)
+    zpt = rnn.predict(x, simtime2)
 
-    return f, [zt, Wmag], [simtime, zpt]
+    return [f, f2], [zt, Wmag], [simtime, zpt]
 
 ################################################################################
 #These will need some more work
