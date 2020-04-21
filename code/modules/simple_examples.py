@@ -21,7 +21,7 @@ def sinwaves(simtime, num_waves, amp, freq, noise=False):
     f = np.zeros(len(simtime))
 
     if noise:
-        G = np.random.randn(len(simtime), num_waves)/20.0
+        G = np.random.randn(len(simtime), num_waves)/4.0
     else:
         G = np.zeros((len(simtime), num_waves))
 
@@ -158,11 +158,11 @@ def sin_8s(Ttime, dt, Ptime):
     simtime = np.arange(0, Ttime, dt)
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = [1]
-    freq = [4.0/16.0]*np.pi
+    amp = 1
+    freq = (4.0/16.0)*np.pi
 
-    f = sinwaves(simtime, 1, amp, freq)
-    f2 = sinwaves(simtime2, 1, amp, freq)
+    f = sinwaves(simtime, 1, [amp], [freq])
+    f2 = sinwaves(simtime2, 1, [amp], [freq])
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime2)
@@ -179,11 +179,11 @@ def sin_60ms(Ttime, dt, Ptime):
     simtime = np.arange(0, Ttime, dt)
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = [3]
-    freq = [2000.0/60.0]*np.pi
+    amp = 3
+    freq = 2000.0/60.0*np.pi
 
-    f = sinwaves(simtime, 1, amp, freq)
-    f2 = sinwaves(simtime2, 1, amp, freq)
+    f = sinwaves(simtime, 1, [amp], [freq])
+    f2 = sinwaves(simtime2, 1, [amp], [freq])
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime2)
