@@ -11,7 +11,7 @@ fontweight = 'bold'
 if __name__ == '__main__':
     sns.set()
 
-    sim, f, train, pred = triangle(200, 0.005, 3)
+    sim, f, train, pred = periodic(100, 0.005, 3)
 
     fig, ax = plt.subplots(1,2)
     fig.set_tight_layout(True)

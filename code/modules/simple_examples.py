@@ -50,7 +50,7 @@ def triangle(Ttime, dt, Ptime):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, Ttime, dt)
-    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt/10)
 
     f = sig.sawtooth(simtime*(2*np.pi), width=0.5)
     f.reshape((len(simtime), 1))
