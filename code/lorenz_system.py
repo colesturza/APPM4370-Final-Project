@@ -10,6 +10,10 @@ fontweight = 'bold'
 nsecs = 100
 step = 0.01
 
+
+# NOTE: Kilpatrick said we should try using forward Euler's method
+# instead of RK4 for integrator. This is to match how our neural net steps.
+
 # RK4 Integrator
 def RK4(dt, t0, tf, V0, dV):
 
