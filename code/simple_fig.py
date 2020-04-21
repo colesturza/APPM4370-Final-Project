@@ -11,12 +11,12 @@ fontweight = 'bold'
 if __name__ == '__main__':
     sns.set()
 
-    f, train, pred = periodic()
+    f, train, pred = noisy(1500, 0.01)
 
     fig, ax = plt.subplots(1,1)
     fig.set_tight_layout(True)
-    ax.plot(pred[0], pred[1], lw=linewidth, c='red')
-    ax.plot(pred[0], f, lw=linewidth, c='blue')
+    # ax.plot(pred[0], pred[1], lw=linewidth, c='red')
+    ax.plot(pred[0], f[1], lw=linewidth, c='blue')
     plt.show()
 
     # nsecs = 3000

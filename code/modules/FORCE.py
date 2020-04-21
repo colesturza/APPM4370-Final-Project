@@ -68,21 +68,22 @@ class Force:
     #Okay so now we are leanrning
 
         #x is pre-activation and z is readout
-        #NOTE: Check in to these
+        #x has to be initialized somewhere
+        #NOTE: Why is z random as well
         x = 0.5*np.random.randn(self.N, 1)
         z = 0.5*np.random.randn(self.readouts, 1)
 
         #post-activation
-        #NOTE: Could calculate this from parameters
         r = self.activation(x)
+        # z = self.W_out.T.dot(r)
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         #Iterate and train the network
         for ti in range(simtime_len):
 
-            # sim, so x(t) and r(t) are created.
-            #NOTE: Check in to this stuff
+            #sim, so x(t) and r(t) are created.
+            #NOTE: Why are we not calculating z first, why dt
             x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
             r = self.activation(x)
             z = self.W_out.T.dot(r)
