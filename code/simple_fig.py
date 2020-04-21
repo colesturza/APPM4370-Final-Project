@@ -9,25 +9,19 @@ fontsize = 14
 fontweight = 'bold'
 
 if __name__ == '__main__':
-    sns.set()
+    sns.set_style('white')
+    sns.despine()
 
-    sim, f, train, pred = periodic(100, 0.005, 3)
+    sim, f, train, pred = sin_8s(1500, 0.1, 500)
 
+    #For most of the examples
     fig, ax = plt.subplots(1,2)
     fig.set_tight_layout(True)
-    ax[0].plot(sim[0], train[0])
-    ax[0].plot(sim[0], f[0])
+    ax[0].plot(sim[0], f[0], c='red')
+    ax[0].plot(sim[0], train[0], c='blue')
     ax[1].plot(sim[1], pred, lw=linewidth, c='red')
     ax[1].plot(sim[1], f[1], lw=linewidth, c='blue')
+    fig.legend(['Predicted', 'Target'])
     plt.show()
 
-    # nsecs = 3000
-    # dt = 0.1
-    #
-    # simtime = np.arange(0, nsecs, dt)
-    # f = sig.sawtooth(simtime*(12*np.pi/nsecs), width=0.5)
-    # f.reshape((len(simtime), 1))
-    #
-    # fig, ax = plt.subplots(1,1)
-    # ax.plot(simtime, f)
-    # plt.show()
+    #For A/B/C and maybe K
