@@ -11,12 +11,14 @@ fontweight = 'bold'
 if __name__ == '__main__':
     sns.set()
 
-    f, train, pred = noisy(1500, 0.01)
+    sim, f, train, pred = triangle(200, 0.005, 3)
 
-    fig, ax = plt.subplots(1,1)
+    fig, ax = plt.subplots(1,2)
     fig.set_tight_layout(True)
-    # ax.plot(pred[0], pred[1], lw=linewidth, c='red')
-    ax.plot(pred[0], f[1], lw=linewidth, c='blue')
+    ax[0].plot(sim[0], train[0])
+    ax[0].plot(sim[0], f[0])
+    ax[1].plot(sim[1], pred, lw=linewidth, c='red')
+    ax[1].plot(sim[1], f[1], lw=linewidth, c='blue')
     plt.show()
 
     # nsecs = 3000
