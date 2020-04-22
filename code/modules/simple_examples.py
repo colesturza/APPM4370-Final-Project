@@ -151,34 +151,15 @@ def discont(Ttime, dt, Ptime):
 ############################################################################
 
 #2I
-#sine wave with period 8s
-def sin_8s(Ttime, dt, Ptime):
+#sine wave with period 800 T or 6T
+def sin(Ttime, dt, Ptime, factor):
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, Ttime, dt)
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
     amp = 1
-    freq = (4.0/16.0)*np.pi
-
-    f = sinwaves(simtime, 1, [amp], [freq])
-    f2 = sinwaves(simtime2, 1, [amp], [freq])
-
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
-
-    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
-
-#2I
-#sine wave with period 60ms
-def sin_60ms(Ttime, dt, Ptime):
-    rnn = Force(g=g_int)
-
-    simtime = np.arange(0, Ttime, dt)
-    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
-
-    amp = 3
-    freq = (2000.0/60.0)*np.pi
+    freq = (2/factor)*np.pi
 
     f = sinwaves(simtime, 1, [amp], [freq])
     f2 = sinwaves(simtime2, 1, [amp], [freq])
