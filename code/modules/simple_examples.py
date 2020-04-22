@@ -14,164 +14,227 @@ g_feed = 0
 alpha = 1.0
 Ni = 0
 
+############################################################################
+
 #Function for producing sum of sine waves
-def sinwaves(simtime, num_waves, amp=[1.0], freq=[1/np.pi], noise=False):
+def sinwaves(simtime, num_waves, amp, freq, noise=False):
     f = np.zeros(len(simtime))
 
     if noise:
-        G = np.random.randn(len(simtime), num_waves)/10.0
+        G = np.random.randn(len(simtime), num_waves)/4.0
     else:
-        G = np.ones((len(simtime), num_waves))
+        G = np.zeros((len(simtime), num_waves))
 
     for i in range(num_waves):
-        f += amp[i]*np.sin(np.pi*freq[i]*simtime) + G[:,i]
+        f += amp[i]*np.sin(freq[i]*simtime) + G[:,i]
 
     return f.reshape((len(simtime),1))
 
-#Basic sinwave
-def basic(nsecs, dt):
-    rnn = Force(g=g_int)
-
-    simtime = np.arange(0, nsecs, dt)
-    amp = np.array([1])
-    freq = np.array([1])
-    freq = freq*12/nsecs
-    f = sinwaves(simtime, 1, amp, freq)
-
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime)
-
-    return f, [zt, Wmag], [simtime, zpt]
+############################################################################
 
 #Fig 2A, 2B, and 2C
-#
-def triangle(nsecs, dt):
+#Run for 3
+def triangle(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
 
-    simtime = np.arange(0, nsecs, dt)
-    simtime2 = np.arange(nsecs, nsecs*2, dt)
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    f = sig.sawtooth(simtime*(10.0*np.pi/nsecs), width=0.5)
-    f.reshape((len(simtime), 1))
-    f2 = sig.sawtooth(simtime*(10.0*np.pi/nsecs), width=0.5)
-    f2.reshape((len(simtime), 1))
+    freq = 1/60
+    f = sig.sawtooth(simtime*np.pi*freq, width=0.5)
+    f.reshape((len(simtime),1))
+
+    f2 = sig.sawtooth(simtime2*np.pi*freq, width=0.5)
+    f2.reshape((len(simtime2),1))
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime2)
 
-    return [f, f2] , [zt, Wmag], [simtime, zpt]
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+############################################################################
 
 #Fig 2D
 #4 sinusoids
-def periodic(nsecs, dt):
+#Run for 3
+def periodic(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
 
-    simtime = np.arange(0, nsecs, dt)
-    simtime2 = np.arange(nsecs, nsecs*2, dt)
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0]) * 1.3
-    freq = np.array([1.0, 2.0, 5.0, 6.0]) * 10.0 / nsecs
-    f = sinwaves(simtime, 4, amp, freq)/1.5
-    f2 = sinwaves(simtime2, 4, amp, freq)/1.5
+    amp = np.array([1, 1/2, 1/3, 1/6])
+    freq = np.array([1, 2, 3, 4])*np.pi*(1/60)
+    f = sinwaves(simtime, 4, amp, freq)
+    f2 = sinwaves(simtime2, 4, amp, freq)
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime2)
 
-    return [f, f2], [zt, Wmag], [simtime, zpt]
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+############################################################################
 
 #2E
 #16 sinusoids
-def periodic_cmplx(nsecs, dt):
+#Run for 5
+def periodic_cmplx(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
 
-    simtime = np.arange(0, nsecs, dt)
-    simtime2 = np.arange(nsecs, nsecs*2, dt)
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0,
-                    1.0/2.5, 1.0/7.0, 1.0/3.2, 1.0/4.0,
-                    1.0/1.5, 1.0/5.0, 1.0/1.2, 1.0/3.4,
-                    1.0/4.7, 1.0/6.9, 1.0/10.0, 1.0/3.8]) * 1.3
-    freq = np.array([1.0, 2.0, 3.0, 6.0,
-                    2.5, 7.0, 3.2, 4.0,
-                    1.5, 5.0, 1.2, 3.4,
-                    4.7, 6.9, 10.0, 3.8]) * 10.0 / nsecs
+    freq = 1/60
+    amp = np.array([1, 1/2, 1/6, 1/3,
+                    1/8, 1/5, 1/6, 1/10,
+                    1/12, 1/4, 1/8, 1/2,
+                    1/8, 1/5, 1/6, 1/10])
+    freq = np.array([1, 2, 3, 4,
+                    5, 6, 7, 8,
+                    9, 10, 11, 12,
+                    13, 14, 15, 16])*np.pi*freq
 
-    f = sinwaves(simtime, 16, amp, freq)/1.5
-    f2 = sinwaves(simtime2, 16, amp, freq)/1.5
+    f = sinwaves(simtime, 16, amp, freq)
+    f2 = sinwaves(simtime2, 16, amp, freq)
 
-    # zt, Wmag, x = rnn.fit(simtime, f)
-    # zpt = rnn.predict(x, simtime2)
-    zt = 0
-    Wmag = 0
-    x = 0
-    zpt = 0
+    zt, Wmag, x = rnn.fit(simtime, f)
+    zpt = rnn.predict(x, simtime2)
 
-    return [f, f2], [zt, Wmag], [simtime, zpt]
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+############################################################################
 
 #2F
 #4 sinusoids w/ noise
-def noisy(nsecs, dt):
+def noisy(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
 
-    simtime = np.arange(0, nsecs, dt)
-    simtime2 = np.arange(nsecs, nsecs*2, dt)
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = np.array([1.0, 1.0/2.0, 1.0/3.0, 1.0/6.0])*1.3
-    freq = np.array([1.0, 2.0, 3.0, 4.0])*10.0/nsecs
-    f = sinwaves(simtime, 4, amp, freq, noise=True)/1.5
-    f2 = sinwaves(simtime2, 4, amp, freq, noise=True)/1.5
+    amp = np.array([1, 1/2, 1/3, 1/6])
+    freq = np.array([1, 2, 3, 4])*np.pi*(1/60)
+    f = sinwaves(simtime, 4, amp, freq, noise=True)
+    f2 = sinwaves(simtime2, 4, amp, freq, noise=True)
 
-    # zt, Wmag, x = rnn.fit(simtime, f)
-    # zpt = rnn.predict(x, simtime2)
-    zt = 0
-    Wmag = 0
-    x = 0
-    zpt = 0
+    zt, Wmag, x = rnn.fit(simtime, f)
+    zpt = rnn.predict(x, simtime2)
 
-    return [f, f2], [zt, Wmag], [simtime, zpt]
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+############################################################################
 
 #2G
 #square wave
-def discont(nsecs, dt):
+def discont(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
 
-    simtime = np.arange(0, nsecs, dt)
-    simtime2 = np.arange(nsecs, nsecs*2, dt)
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    f = sig.square(simtime/50)
+    freq = 1/60
+    f = sig.square(simtime*np.pi*freq)
     f.reshape(len(simtime), 1)
-    f2 = sig.square(simtime2/50)
+    f2 = sig.square(simtime2*np.pi*freq)
     f2.reshape(len(simtime2), 1)
 
     zt, Wmag, x = rnn.fit(simtime, f)
     zpt = rnn.predict(x, simtime2)
 
-    return [f, f2], [zt, Wmag], [simtime, zpt]
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+############################################################################
+
+#2I
+#sine wave with period 8s
+def sin_8s(Ttime, dt, Ptime):
+    rnn = Force(g=g_int)
+
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
+
+    amp = 1
+    freq = (4.0/16.0)*np.pi
+
+    f = sinwaves(simtime, 1, [amp], [freq])
+    f2 = sinwaves(simtime2, 1, [amp], [freq])
+
+    zt, Wmag, x = rnn.fit(simtime, f)
+    zpt = rnn.predict(x, simtime2)
+
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+#2I
+#sine wave with period 60ms
+def sin_60ms(Ttime, dt, Ptime):
+    rnn = Force(g=g_int)
+
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
+
+    amp = 3
+    freq = (2000.0/60.0)*np.pi
+
+    f = sinwaves(simtime, 1, [amp], [freq])
+    f2 = sinwaves(simtime2, 1, [amp], [freq])
+
+    zt, Wmag, x = rnn.fit(simtime, f)
+    zpt = rnn.predict(x, simtime2)
+
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
 ################################################################################
-#These will need some more work
+a, r, b = 10, 28, 8/3
+
+def system(S):
+    x, y, z = S
+    return np.array([a * (y - x), x * (r - z) - y, x * y - b * z])
+
+def fwdEuler(dimensions, t0, tf, V0, dt):
+    t = np.arange(t0,tf,dt)
+    V = np.zeros((len(t), 3))
+    V[0] = V0
+
+    #FWD Euler
+    for i in range(len(t)-1):
+        Vprime = system(V[i])
+        V[i+1] = V[i] + dt*Vprime
+
+    return t, V[:,0:dimensions]
 
 #2H
 #Lorenz attractor 1D slice
-def lorenz():
-    rnn = Force(g=g_int)
+def lorenz(Ttime, dt, Ptime, dims=1):
+    rnn = Force(g=g_int, readouts=dims)
 
-#2I
-#sine waves with period 60ms and 8s
-def sin_multiT():
-    rnn = Force(g=g_int)
+    V0 = np.array([0, 1, 2])
+    t, V = fwdEuler(dims, 0, Ttime, V0, dt)
+    t2, V2 = fwdEuler(dims, Ttime, Ttime+Ptime, V[-1], dt)
+
+    zt, Wmag, x = rnn.fit(t, V)
+    zpt = rnn.predict(x, t2)
+
+    return [t, t2], [V, V2] , [zt, Wmag], zpt
+
+################################################################################
 
 #2J
 #One shot example with two outputs
-def aperiodic():
+def aperiodic(Ttime, dt, Ptime):
     rnn = Force(g=g_int, readouts=2)
+
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+################################################################################
 
 #2K
 #FORCE failing
-def fail():
+def fail(Ttime, dt, Ptime):
     rnn = Force(g=g_int)
+
+    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
