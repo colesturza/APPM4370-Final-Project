@@ -1,4 +1,4 @@
-from modules.FORCE import Force
+from modules.PCA import PCA_NN
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -29,10 +29,12 @@ simtime2_len = len(simtime2)
 # simtime = simtime.reshape((simtime_len, 1))
 # simtime2 = simtime2.reshape((simtime2_len, 1))
 
-rnn = Force(N=N, p=p, g=g)
+rnn = PCA_NN(N=N, p=p, g=g)
 
-_, _, x, corr_mat = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, \
-    learn_every=learn_every, return_corr=True)
+_, x, eigvals, projections = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, learn_every=learn_every)
+
+np.savetxt('eigvals', eigvals)
+np.savetxt('projections', projections)
 
 zpt = rnn.predict(x, simtime2)
 avg_error = rnn.evaluate(x, simtime2, sum_of_four_sinusoids)
@@ -53,21 +55,44 @@ axs[1].set_xlabel('time')
 axs[1].set_ylabel('z')
 axs[1].set_title('Prediction')
 
-# PCA analysis:
-eigvals, eigvects = np.linalg.eig(corr_mat)
-
-ind = np.argsort(eigvals)
-
-eigvals, eigvects = eigvals[ind], eigvects[ind]
-
-print(eigvals[-100:])
-
-fig2, ax = plt.subplots()
-fig1.set_tight_layout(True)
+fig2, ax2 = plt.subplots()
+fig2.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
-ax.plot(np.arange(1,101), np.log10(eigvals[-100:]), color='#03adfc')
-ax.set_xlabel('eigenvalue')
-ax.set_ylabel('log10(eigenvalue)')
+ax2.plot(np.arange(1,101), np.log10(eigvals), color='#03adfc')
+ax2.set_xlabel('eigenvalue')
+ax2.set_ylabel('log10(eigenvalue)')
+
+fig3, ax3 = plt.subplots()
+fig3.set_tight_layout(True)
+sns.set_style('white')
+sns.despine()
+ax3.plot(simtime, projections[:,0], color='#03adfc')
+ax3.set_xlabel('time')
+ax3.set_ylabel('PC1')
+
+fig4, ax4 = plt.subplots()
+fig4.set_tight_layout(True)
+sns.set_style('white')
+sns.despine()
+ax4.plot(simtime, projections[:,1], color='#03adfc')
+ax4.set_xlabel('time')
+ax4.set_ylabel('PC2')
+
+fig5, ax5 = plt.subplots()
+fig3.set_tight_layout(True)
+sns.set_style('white')
+sns.despine()
+ax5.plot(simtime, projections[:,2], color='#03adfc')
+ax5.set_xlabel('time')
+ax5.set_ylabel('PC3')
+
+fig6, ax6 = plt.subplots()
+fig6.set_tight_layout(True)
+sns.set_style('white')
+sns.despine()
+ax6.plot(projections[:,0], projections[:,1], color='#03adfc')
+ax6.set_xlabel('PC1')
+ax6.set_ylabel('PC2')
 
 plt.show()
