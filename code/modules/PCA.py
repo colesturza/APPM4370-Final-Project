@@ -2,6 +2,7 @@ from modules.FORCE import Force
 import numpy as np
 from scipy.sparse import random
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 class PCA_NN(Force):
 
@@ -48,10 +49,11 @@ class PCA_NN(Force):
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         pca = PCA(n_components=100)
+        sc = StandardScaler()
 
-        projections = []
+        projections = np.zeros((simtime_len, 9))
 
-        X = []
+        X = np.zeros((simtime_len, self.N))
 
         #Iterate and train the network
         for ti in range(simtime_len):
@@ -61,23 +63,41 @@ class PCA_NN(Force):
             r = self.activation(x)
             z = self.W_out.T.dot(r)
 
-            X.append(x.reshape(self.N).tolist())
+            X[ti, :] = x.reshape(self.N)
 
-            # # Perform PCA at each timestep and project w onto PC 1, PC 2, and PC 80.
-            # pca.fit(np.array(X).dot(np.array(X).T)/(self.N * self.N))
-            #
-            # eigvects = pca.components_
-            #
-            # # Project w onto PC 1
-            # project_pc1 = self.W_out.T.dot(eigvects[0])
-            #
-            # # Project w onto PC 2
-            # project_pc2 = self.W_out.T.dot(eigvects[1])
-            #
-            # # Project w onto PC 80
-            # project_pc80 = self.W_out.T.dot(eigvects[79])
-            #
-            # projections.append([project_pc1, project_pc2, project_pc80])
+            # Perform PCA at each timestep and project w onto PC 1, PC 2, and PC 80.
+            X_t = X[:ti+1,:]
+            #X_t = X_t - np.mean(X_t, axis=0)
+            S = X_t.T.dot(X_t)#/self.N
+            S_std = sc.fit_transform(S)
+            pca.fit(S_std)
+
+            eigvects = pca.components_
+
+            # Project w onto PC 1
+            project_pc1 = self.W_out.T.dot(eigvects[0])[0]
+            # Project w onto PC 2
+            project_pc2 = self.W_out.T.dot(eigvects[1])[0]
+            # Project w onto PC 3
+            project_pc3 = self.W_out.T.dot(eigvects[2])[0]
+            # Project w onto PC 4
+            project_pc4 = self.W_out.T.dot(eigvects[3])[0]
+            # Project w onto PC 5
+            project_pc5 = self.W_out.T.dot(eigvects[4])[0]
+            # Project w onto PC 6
+            project_pc6 = self.W_out.T.dot(eigvects[5])[0]
+            # Project w onto PC 7
+            project_pc7 = self.W_out.T.dot(eigvects[6])[0]
+            # Project w onto PC 8
+            project_pc8 = self.W_out.T.dot(eigvects[7])[0]
+            # Project w onto PC 80
+            project_pc80 = self.W_out.T.dot(eigvects[79])[0]
+
+            projects = np.array([project_pc1, project_pc2, project_pc3,
+                                 project_pc4, project_pc5, project_pc6,
+                                 project_pc7, project_pc8, project_pc80])
+
+            projections[ti, :] = projects
 
             if (ti+1) % learn_every == 0:
                 #Update inverse correlation matrix
@@ -96,23 +116,23 @@ class PCA_NN(Force):
             #Store the output of the system.
             zt[ti,:] = z
 
+            if ti % 100 == 0:
+                print('Finished {}'.format(ti))
+
         #Average error after learning
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
         print('Training MAE: {:.5f}'.format(error_avg))
 
-        X = np.array(X)
-
         # subtract the mean of each column
-        X = X - np.mean(X, axis=0)
+        # X = X - np.mean(X, axis=0)
 
         # Sample variance-covariance matrix
-        S = X.T.dot(X)/self.N
+        S = X.T.dot(X)#/self.N
 
-        print(S.shape)
+        S_std = sc.fit_transform(S)
+        pca.fit(S_std)
 
-        pca.fit(S)
-        eigvals = pca.explained_variance_ # calculate variance ratios
-        eigvects = pca.components_
+        eigvals = pca.explained_variance_
 
         #Return the training progression
-        return zt, x, eigvals, eigvects, projections
+        return zt, x, eigvals, projections
