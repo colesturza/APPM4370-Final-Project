@@ -169,8 +169,6 @@ def sin_8s(Ttime, dt, Ptime):
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
-############################################################################
-
 #2I
 #sine wave with period 60ms
 def sin_60ms(Ttime, dt, Ptime):
@@ -180,7 +178,7 @@ def sin_60ms(Ttime, dt, Ptime):
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
     amp = 3
-    freq = 2000.0/60.0*np.pi
+    freq = (2000.0/60.0)*np.pi
 
     f = sinwaves(simtime, 1, [amp], [freq])
     f2 = sinwaves(simtime2, 1, [amp], [freq])
@@ -191,14 +189,39 @@ def sin_60ms(Ttime, dt, Ptime):
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
 ################################################################################
-#These will need some more work
+a, r, b = 10, 28, 8/3
+
+def system(S):
+    x, y, z = S
+    return np.array([a * (y - x), x * (r - z) - y, x * y - b * z])
+
+def fwdEuler(dimensions, t0, tf, V0, dt):
+    t = np.arange(t0,tf,dt)
+    V = np.zeros((len(t), 3))
+    V[0] = V0
+
+    #FWD Euler
+    for i in range(len(t)-1):
+        Vprime = system(V[i])
+        V[i+1] = V[i] + dt*Vprime
+
+    return t, V[:,0:dimensions]
 
 #2H
 #Lorenz attractor 1D slice
-def lorenz(Ttime, dt, Ptime):
-    rnn = Force(g=g_int)
+def lorenz(Ttime, dt, Ptime, dims=1):
+    rnn = Force(g=g_int, readouts=dims)
 
-    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+    V0 = np.array([0, 1, 2])
+    t, V = fwdEuler(dims, 0, Ttime, V0, dt)
+    t2, V2 = fwdEuler(dims, Ttime, Ttime+Ptime, V[-1], dt)
+
+    zt, Wmag, x = rnn.fit(t, V)
+    zpt = rnn.predict(x, t2)
+
+    return [t, t2], [V, V2] , [zt, Wmag], zpt
+
+################################################################################
 
 #2J
 #One shot example with two outputs
@@ -206,6 +229,8 @@ def aperiodic(Ttime, dt, Ptime):
     rnn = Force(g=g_int, readouts=2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+
+################################################################################
 
 #2K
 #FORCE failing
