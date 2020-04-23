@@ -153,7 +153,7 @@ class Force:
         dt = diff[0]
 
         if self.saveInternal:
-            self.intOut = np.array((simtime_len, self.num2save))
+            self.intOut = np.zeros((simtime_len, self.num2save))
 
         zpt = np.zeros((simtime_len, self.readouts))
 
