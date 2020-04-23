@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # sns.set_style('white')
     # sns.despine()
 
-    sim, f, train, pred = triangle(1500, 0.1, 500)
+    sim, f, train, pred = lorenz(1500, 0.01, 500, 1)
 
     #For most of the examples
     fig, ax = plt.subplots(1,2)
