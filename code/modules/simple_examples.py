@@ -202,8 +202,8 @@ def lorenz(Ttime, dt, Ptime, dims=1):
     t, V = fwdEuler(dims, 0, Ttime, V0, dt)
     t2, V2 = fwdEuler(dims, Ttime, Ttime+Ptime, V[-1], dt)
 
-    zt, Wmag = rnn.fit(simtime, f)
-    zpt = rnn.predict(simtime2)
+    zt, Wmag = rnn.fit(t, f)
+    zpt = rnn.predict(t2)
 
     return [t, t2], [V, V2] , [zt, Wmag], zpt
 
