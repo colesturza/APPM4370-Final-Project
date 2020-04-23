@@ -84,7 +84,9 @@ class Force:
         #x is pre-activation and z is readout
         #x has to be initialized somewhere
         #NOTE: Why is z random as well
-        x = self.setIC()
+        if self.x is None:
+            x = self.setIC()
+        else: x = self.x
         z = 0.5*np.random.randn(self.readouts, 1)
 
         #post-activation
