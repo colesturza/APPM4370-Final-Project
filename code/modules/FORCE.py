@@ -12,6 +12,9 @@ class Force:
         self.activation = activation #Output layer activation
         self.readouts = readouts # Number of readouts
 
+        self.x = None #Set with function
+        self.saveInternal = False #Set with config
+
         scale = 1.0/np.sqrt(p*N) #Scale of internal network connections
 
         #These are the internal network connections
@@ -26,6 +29,14 @@ class Force:
         #Feedback weights
         #NOTE: Shifts the distribution to mean of zero
         self.W_feed = 2.0*(np.random.rand(N, readouts)-0.5)
+
+    def config(self, *, neuron_output, num_neurons=8):
+        self.saveInternal = True
+        self.num2save = num_neurons
+
+    def setIC(self):
+        self.x = 0.5*np.random.randn(self.N, 1)
+        return self.x
 
 ################################################################################
     #Train the network on specified function
@@ -43,6 +54,9 @@ class Force:
             raise ValueError('All values in simtime must be evenly spaced.')
 
         dt = diff[0]
+
+        if self.saveInternal:
+            self.intOut = np.zeros((simtime_len, self.num2save))
 
         #Weight update vector
         dW_out = np.zeros((self.N, self.readouts))
@@ -70,7 +84,7 @@ class Force:
         #x is pre-activation and z is readout
         #x has to be initialized somewhere
         #NOTE: Why is z random as well
-        x = 0.5*np.random.randn(self.N, 1)
+        x = self.setIC()
         z = 0.5*np.random.randn(self.readouts, 1)
 
         #post-activation
@@ -102,6 +116,10 @@ class Force:
                 dW_out = -k.dot(e.T) * c
                 self.W_out = self.W_out + dW_out
 
+            #Saving internal outputs
+            if self.saveInternal:
+                self.intOut[ti,:] = r[:self.num2save][0]
+
             #Store the output of the system.
             zt[ti,:] = z.reshape(self.readouts)
 
@@ -109,16 +127,20 @@ class Force:
             W_out_mag[ti,:] = np.linalg.norm(self.W_out, axis=0)
 
         #Average error after learning
+        self.x = x #Keep the final state
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
         print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
-        return zt, W_out_mag, x
+        return zt, W_out_mag
 
 ################################################################################
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
-    def predict(self, x, simtime):
+    def predict(self, simtime):
+        if self.x is None:
+            x = self.setIC()
+        else: x = self.x
 
         simtime_len = simtime.shape[0]
 
@@ -127,6 +149,9 @@ class Force:
             raise ValueError('All values in simtime must be evenly spaced.')
 
         dt = diff[0]
+
+        if self.saveInternal:
+            self.intOut = np.array((simtime_len, self.num2save))
 
         zpt = np.zeros((simtime_len, self.readouts))
 
@@ -141,6 +166,9 @@ class Force:
             z = self.W_out.T.dot(r)
 
             zpt[ti,:] = z.reshape(self.readouts)
+
+            if self.saveInternal:
+                self.intOut[ti,:] = r[:self.num2save][0]
 
         return zpt
 

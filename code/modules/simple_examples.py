@@ -21,7 +21,8 @@ def sinwaves(simtime, num_waves, amp, freq, noise=False):
     f = np.zeros(len(simtime))
 
     if noise:
-        G = np.random.randn(len(simtime), num_waves)/4.0
+        avgA = sum(amp)/len(amp)
+        G = np.random.randn(len(simtime), num_waves)*avgA/4.0
     else:
         G = np.zeros((len(simtime), num_waves))
 
@@ -37,6 +38,7 @@ def sinwaves(simtime, num_waves, amp, freq, noise=False):
 def triangle(Ttime, dt, Ptime):
 
     rnn = Force(g=g_int)
+    rnn.config(neuron_output=True)
 
     simtime = np.arange(0, Ttime, dt)
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
@@ -48,10 +50,12 @@ def triangle(Ttime, dt, Ptime):
     f2 = sig.sawtooth(simtime2*np.pi*freq, width=0.5)
     f2.reshape((len(simtime2),1))
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    intOutT = rnn.intOut
+    zpt = rnn.predict(simtime2)
+    intOutP = rnn.intOut
 
-    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+    return [simtime, simtime2], [f, f2] , [zt, Wmag, intOutT], [zpt, intOutP]
 
 ############################################################################
 
@@ -70,8 +74,8 @@ def periodic(Ttime, dt, Ptime):
     f = sinwaves(simtime, 4, amp, freq)
     f2 = sinwaves(simtime2, 4, amp, freq)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
@@ -100,8 +104,8 @@ def periodic_cmplx(Ttime, dt, Ptime):
     f = sinwaves(simtime, 16, amp, freq)
     f2 = sinwaves(simtime2, 16, amp, freq)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
@@ -121,8 +125,8 @@ def noisy(Ttime, dt, Ptime):
     f = sinwaves(simtime, 4, amp, freq, noise=True)
     f2 = sinwaves(simtime2, 4, amp, freq, noise=True)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
@@ -143,8 +147,8 @@ def discont(Ttime, dt, Ptime):
     f2 = sig.square(simtime2*np.pi*freq)
     f2.reshape(len(simtime2), 1)
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
@@ -152,20 +156,21 @@ def discont(Ttime, dt, Ptime):
 
 #2I
 #sine wave with period 800 T or 6T
-def sin(Ttime, dt, Ptime, factor):
+def sin(Ttime, dt, Ptime, vars):
+    A, F = vars
     rnn = Force(g=g_int)
 
     simtime = np.arange(0, Ttime, dt)
     simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
 
-    amp = 1
-    freq = (2/factor)*np.pi
+    amp = 1*A
+    freq = (2/F)*np.pi
 
     f = sinwaves(simtime, 1, [amp], [freq])
     f2 = sinwaves(simtime2, 1, [amp], [freq])
 
-    zt, Wmag, x = rnn.fit(simtime, f)
-    zpt = rnn.predict(x, simtime2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
@@ -197,8 +202,8 @@ def lorenz(Ttime, dt, Ptime, dims=1):
     t, V = fwdEuler(dims, 0, Ttime, V0, dt)
     t2, V2 = fwdEuler(dims, Ttime, Ttime+Ptime, V[-1], dt)
 
-    zt, Wmag, x = rnn.fit(t, V)
-    zpt = rnn.predict(x, t2)
+    zt, Wmag = rnn.fit(simtime, f)
+    zpt = rnn.predict(simtime2)
 
     return [t, t2], [V, V2] , [zt, Wmag], zpt
 
@@ -214,8 +219,24 @@ def aperiodic(Ttime, dt, Ptime):
 ################################################################################
 
 #2K
-#FORCE failing
-def fail(Ttime, dt, Ptime):
+#Failing due to low amplitude
+def low_amp(Ttime, dt, Ptime, vars):
+    A, F = vars
+
     rnn = Force(g=g_int)
 
-    return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
+    simtime = np.arange(0, Ttime, dt)
+    simtime2 = np.arange(Ttime, Ttime+Ptime, dt)
+
+    amp = 1*A
+    freq = (2/F)*np.pi
+
+    f = sinwaves(simtime, 1, [amp], [freq])
+    f2 = sinwaves(simtime2, 1, [amp], [freq])
+
+    zt, Wmag = rnn.fit(simtime, f)
+    intOutT = rnn.intOut
+    zpt = rnn.predict(simtime2)
+    intOutP = rnn.intOut
+
+    return [simtime, simtime2], [f, f2] , [zt, Wmag, intOutT], [zpt, intOutP]

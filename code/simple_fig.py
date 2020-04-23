@@ -13,17 +13,21 @@ if __name__ == '__main__':
     # sns.set_style('white')
     # sns.despine()
 
-    sim, f, train, pred = sin_60ms(100, 0.01, 500, 1)
+    sim, f, train, pred = triangle(1500, 0.1, 500)
 
     #For most of the examples
     fig, ax = plt.subplots(1,2)
     fig.set_tight_layout(True)
     ax[0].plot(sim[0], f[0], c='red')
     ax[0].plot(sim[0], train[0], c='blue')
-    ax[1].plot(sim[1], pred, lw=linewidth, c='red')
+    ax[1].plot(sim[1], pred[0], lw=linewidth, c='red')
     ax[1].plot(sim[1], f[1], lw=linewidth, c='blue')
     fig.legend(['Predicted', 'Target'])
     plt.show()
+
+    fig, ax = plt.subplots(1,2)
+    fig.set_tight_layout
+    ax[0].plot(simtime[0], train[2][:,0])
 
     #For A/B/C and maybe K
 
