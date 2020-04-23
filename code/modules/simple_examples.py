@@ -22,7 +22,7 @@ def sinwaves(simtime, num_waves, amp, freq, noise=False):
 
     if noise:
         avgA = sum(amp)/len(amp)
-        G = np.random.randn(len(simtime), num_waves)*avgA/4.0
+        G = (np.random.randn(len(simtime), num_waves)-0.5)*avgA/4.0
     else:
         G = np.zeros((len(simtime), num_waves))
 

@@ -4,7 +4,7 @@ from scipy.sparse import random
 class Force:
     #Set up network parameters and structure
     #NOTE: Need to implement multiple readouts and inputs
-    def __init__(self, *, N=1000, p=0.1, g=1.0, activation=np.tanh, readouts=1):
+    def __init__(self, *, N=1000, p=0.1, g=1.0, activation=np.tanh, readouts=1, randomReadout=False):
 
         self.N = N #Number of neurons in the network
         self.p = p #Sparsity (i.e number of recurrent connections per neuron)
@@ -24,7 +24,10 @@ class Force:
         #NOTE: Need to deal with potentially more readouts
         #NOTE: This could be random, but it might not matter as any kinks will
         #get fixed once training starts.
-        self.W_out = np.zeros((N, readouts)) #Readout weights
+        if randomReadout:
+            self.W_out = 2.0*(np.random.rand(N, readouts)-0.5)
+        else:
+            self.W_out = np.zeros((N, readouts)) #Readout weights
 
         #Feedback weights
         #NOTE: Shifts the distribution to mean of zero
