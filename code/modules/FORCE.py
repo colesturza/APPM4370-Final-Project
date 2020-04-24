@@ -22,11 +22,9 @@ class Force:
         W_int = random(N, N, density=p, data_rvs=np.random.randn) * g * scale
         self.W_int = W_int.toarray() #Make it a np matrix
 
-        #NOTE: Need to deal with potentially more readouts
-        #NOTE: This could be random, but it might not matter as any kinks will
-        #get fixed once training starts.
+        #These are the readout weights
         if randomReadout:
-            self.W_out = (1/self.N)*(np.random.randn(N, readouts))
+            self.W_out = (1/np.sqrt(self.N))*(np.random.randn(N, readouts))
         else:
             self.W_out = np.zeros((N, readouts)) #Readout weights
 
