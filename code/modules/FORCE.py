@@ -4,13 +4,14 @@ from scipy.sparse import random
 class Force:
     #Set up network parameters and structure
     #NOTE: Need to implement multiple readouts and inputs
-    def __init__(self, *, N=1000, p=0.1, g=1.0, activation=np.tanh, readouts=1, randomReadout=False):
+    def __init__(self, *, N=1000, p=0.1, g=1.0, tau=1.0, activation=np.tanh, readouts=1, randomReadout=False):
 
         self.N = N #Number of neurons in the network
         self.p = p #Sparsity (i.e number of recurrent connections per neuron)
         self.g = g #Chaos in the network, g>1 leads to chaos
         self.activation = activation #Output layer activation
         self.readouts = readouts # Number of readouts
+        self.tau = tau
 
         self.x = None #Set with function
         self.saveInternal = False #Set with config
@@ -25,7 +26,7 @@ class Force:
         #NOTE: This could be random, but it might not matter as any kinks will
         #get fixed once training starts.
         if randomReadout:
-            self.W_out = 2.0*(np.random.rand(N, readouts)-0.5)
+            self.W_out = (1/self.N)*(np.random.randn(N, readouts))
         else:
             self.W_out = np.zeros((N, readouts)) #Readout weights
 
@@ -103,7 +104,7 @@ class Force:
 
             #sim, so x(t) and r(t) are created.
             #NOTE: Why are we not calculating z first, why dt
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
+            x = ((1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
             r = self.activation(x)
             z = self.W_out.T.dot(r)
 
@@ -166,7 +167,7 @@ class Force:
         for ti in range(simtime_len):
 
             # sim, so x(t) and r(t) are created.
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
+            x = ((1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
             r = self.activation(x)
             z = self.W_out.T.dot(r)
 
