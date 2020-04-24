@@ -76,7 +76,7 @@ class Force:
         ft = ft.reshape((simtime_len, self.readouts))
 
         #Magnitude of weights as we learn
-        W_out_mag = np.zeros((simtime_len, self.readouts))
+        W_out_t = np.zeros((simtime_len, self.readouts))
 
         #Essentially the output function (vector)
         zt = np.zeros((simtime_len, self.readouts))
@@ -128,7 +128,7 @@ class Force:
             zt[ti,:] = z.reshape(self.readouts)
 
             #Magnitude of weights
-            W_out_mag[ti,:] = np.linalg.norm(self.W_out, axis=0)
+            W_out_t[ti,:] = self.W_out
 
         #Average error after learning
         self.x = x #Keep the final state
@@ -136,7 +136,7 @@ class Force:
         print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
-        return zt, W_out_mag
+        return zt, W_out_t
 
 ################################################################################
     #Use the trained neural network predict or generate
