@@ -15,6 +15,7 @@ class Force:
 
         self.x = None #Set with function
         self.saveInternal = False #Set with config
+        self.rand_z = True #set with config
 
         scale = 1.0/np.sqrt(p*N) #Scale of internal network connections
 
@@ -32,9 +33,10 @@ class Force:
         #NOTE: Shifts the distribution to mean of zero
         self.W_feed = 2.0*(np.random.rand(N, readouts)-0.5)
 
-    def config(self, *, neuron_output, num_neurons=8):
+    def config(self, *, neuron_output, num_neurons=8, rand_z):
         self.saveInternal = True
         self.num2save = num_neurons
+        self.rand_z = rand_z
 
     def setIC(self):
         self.x = 0.5*np.random.randn(self.N, 1)
@@ -90,11 +92,12 @@ class Force:
             x = self.setIC()
         else: x = self.x
 
-        # z = 0.5*np.random.randn(self.readouts, 1)
-
         #post-activation
         r = self.activation(x)
-        z = self.W_out.T.dot(r)
+
+        if self.rand_z:
+            z = 0.5*np.random.randn(self.readouts, 1)
+        else: z = self.W_out.T.dot(r)
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
