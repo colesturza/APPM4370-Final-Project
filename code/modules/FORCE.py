@@ -122,7 +122,7 @@ class Force:
 
             #Saving internal outputs
             if self.saveInternal:
-                self.intOut[ti,:] = r[:self.num2save][0]
+                self.intOut[ti,:] = x[:self.num2save,0]
 
             #Store the output of the system.
             zt[ti,:] = z.reshape(self.readouts)
