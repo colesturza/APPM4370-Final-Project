@@ -89,11 +89,12 @@ class Force:
         if self.x is None:
             x = self.setIC()
         else: x = self.x
-        z = 0.5*np.random.randn(self.readouts, 1)
+
+        # z = 0.5*np.random.randn(self.readouts, 1)
 
         #post-activation
         r = self.activation(x)
-        # z = self.W_out.T.dot(r)
+        z = self.W_out.T.dot(r)
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
@@ -122,7 +123,7 @@ class Force:
 
             #Saving internal outputs
             if self.saveInternal:
-                self.intOut[ti,:] = x[:self.num2save,0]
+                self.intOut[ti,:] = r[:self.num2save,0]
 
             #Store the output of the system.
             zt[ti,:] = z.reshape(self.readouts)
