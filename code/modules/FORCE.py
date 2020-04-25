@@ -33,8 +33,8 @@ class Force:
         #NOTE: Shifts the distribution to mean of zero
         self.W_feed = 2.0*(np.random.rand(N, readouts)-0.5)
 
-    def config(self, *, neuron_output, num_neurons=8, rand_z):
-        self.saveInternal = True
+    def config(self, *, neuron_output, num_neurons, rand_z):
+        self.saveInternal = neuron_output
         self.num2save = num_neurons
         self.rand_z = rand_z
 
@@ -176,7 +176,7 @@ class Force:
             zpt[ti,:] = z.reshape(self.readouts)
 
             if self.saveInternal:
-                self.intOut[ti,:] = r[:self.num2save][0]
+                self.intOut[ti,:] = r[:self.num2save,0]
 
         return zpt
 
