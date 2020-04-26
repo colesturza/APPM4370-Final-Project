@@ -106,7 +106,8 @@ class Force:
 
             #sim, so x(t) and r(t) are created.
             #NOTE: Why are we not calculating z first, why dt
-            x = ((1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
+            # x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
+            x = x - (x*dt + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
             r = self.activation(x)
             z = self.W_out.T.dot(r)
 
