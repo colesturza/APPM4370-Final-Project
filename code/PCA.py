@@ -30,29 +30,29 @@ simtime_len = len(simtime)
 
 rnn = PCA_NN(N=N, p=p, g=g)
 
-# zt, x, eigvals, projections = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, learn_every=learn_every)
+zt, x, eigvals, projections = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, learn_every=learn_every)
 
 # zpt = rnn.predict(x, simtime2)
 # avg_error = rnn.evaluate(x, simtime2, sum_of_four_sinusoids)
 
-# fig1, axs = plt.subplots(2,1)
-# fig1.set_tight_layout(True)
-# fig1.suptitle('Testing -- Average Error = {:.5f}'.format(avg_error))
-# sns.set_style('white')
-# sns.despine()
-#
-# axs[0].plot(simtime2, sum_of_four_sinusoids(simtime2), color='#233D4D')
-# axs[0].set_xlabel('time')
-# axs[0].set_ylabel('f')
-# axs[0].set_title('Actual')
-#
-# axs[1].plot(simtime2, zpt, color='#FE7F2D')
-# axs[1].set_xlabel('time')
-# axs[1].set_ylabel('z')
-# axs[1].set_title('Prediction')
+fig1, axs = plt.subplots(2,1)
+fig1.set_tight_layout(True)
+fig1.suptitle('Testing -- Average Error = {:.5f}'.format(avg_error))
+sns.set_style('white')
+sns.despine()
 
-eigvals = pd.read_csv('eigvals.txt', header=None).to_numpy()
-projections = pd.read_csv('projections.txt', sep=' ', header=None).to_numpy()
+axs[0].plot(simtime[-4500:], sum_of_four_sinusoids(simtime2)[-4500:], color='#233D4D')
+axs[0].set_xlabel('time')
+axs[0].set_ylabel('f')
+axs[0].set_title('Actual')
+
+axs[1].plot(simtime[-4500:], zt[-4500:], color='#FE7F2D')
+axs[1].set_xlabel('time')
+axs[1].set_ylabel('z')
+axs[1].set_title('Prediction')
+
+# eigvals = pd.read_csv('eigvals.txt', header=None).to_numpy()
+# projections = pd.read_csv('projections.txt', sep=' ', header=None).to_numpy()
 
 fig2, ax2 = plt.subplots()
 fig2.set_tight_layout(True)

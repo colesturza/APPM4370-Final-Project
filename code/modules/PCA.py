@@ -22,7 +22,7 @@ class PCA_NN(Force):
         dt = diff[0]
 
         #Weight update vector
-        dW_out = np.zeros((self.N, 1))
+        dW_out = np.zeros((self.N, self.readouts))
 
         #Check if func_to_learn is either a callable function or an
         #ndarray of values to learn.
@@ -37,21 +37,29 @@ class PCA_NN(Force):
         ft = ft.reshape((simtime_len, 1))
 
         #Essentially the output function (vector)
-        zt = np.zeros((simtime_len, 1))
+        zt = np.zeros((simtime_len, self.readouts))
 
     #Okay so now we are leanrning
 
-        x = 0.5*np.random.randn(self.N, 1)
-        z = 0.5*np.random.randn()
+        #x is pre-activation and z is readout
+        #x has to be initialized somewhere
+        #NOTE: Why is z random as well
+        if self.x is None:
+            x = self.setIC()
+        else: x = self.x
 
+        #post-activation
         r = self.activation(x)
+
+        if self.rand_z:
+            z = 0.5*np.random.randn(self.readouts, 1)
+        else: z = self.W_out.T.dot(r)
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
         # PCA stuff
         pca = PCA(n_components=100)
-        sc = StandardScaler()
-        projections = np.zeros((simtime_len, 9))
+        projections = np.zeros((simtime_len, 9, self.readouts))
         X = np.zeros((simtime_len, self.N))
 
         #Iterate and train the network
@@ -68,29 +76,29 @@ class PCA_NN(Force):
             X_t = X[:ti+1,:]
             # Sample variance-covariance matrix
             S = X_t.T.dot(X_t)
-            S_std = sc.fit_transform(S)
-            pca.fit(S_std)
+            #S_std = sc.fit_transform(S)
+            pca.fit(S)#S_std)
 
             eigvects = pca.components_
 
             # Project w onto PC 1
-            project_pc1 = self.W_out.T.dot(eigvects[0])[0]
+            project_pc1 = self.W_out.T.dot(eigvects[0]).reshape(self.readouts)
             # Project w onto PC 2
-            project_pc2 = self.W_out.T.dot(eigvects[1])[0]
+            project_pc2 = self.W_out.T.dot(eigvects[1]).reshape(self.readouts)
             # Project w onto PC 3
-            project_pc3 = self.W_out.T.dot(eigvects[2])[0]
+            project_pc3 = self.W_out.T.dot(eigvects[2]).reshape(self.readouts)
             # Project w onto PC 4
-            project_pc4 = self.W_out.T.dot(eigvects[3])[0]
+            project_pc4 = self.W_out.T.dot(eigvects[3]).reshape(self.readouts)
             # Project w onto PC 5
-            project_pc5 = self.W_out.T.dot(eigvects[4])[0]
+            project_pc5 = self.W_out.T.dot(eigvects[4]).reshape(self.readouts)
             # Project w onto PC 6
-            project_pc6 = self.W_out.T.dot(eigvects[5])[0]
+            project_pc6 = self.W_out.T.dot(eigvects[5]).reshape(self.readouts)
             # Project w onto PC 7
-            project_pc7 = self.W_out.T.dot(eigvects[6])[0]
+            project_pc7 = self.W_out.T.dot(eigvects[6]).reshape(self.readouts)
             # Project w onto PC 8
-            project_pc8 = self.W_out.T.dot(eigvects[7])[0]
+            project_pc8 = self.W_out.T.dot(eigvects[7]).reshape(self.readouts)
             # Project w onto PC 80
-            project_pc80 = self.W_out.T.dot(eigvects[79])[0]
+            project_pc80 = self.W_out.T.dot(eigvects[79]).reshape(self.readouts)
 
             projects = np.array([project_pc1, project_pc2, project_pc3,
                                  project_pc4, project_pc5, project_pc6,
@@ -112,20 +120,25 @@ class PCA_NN(Force):
                 dW_out = -k.dot(e.T) * c
                 self.W_out = self.W_out + dW_out
 
+            #Saving internal outputs
+            if self.saveInternal:
+                self.intOut[ti,:] = r[:self.num2save,0]
+
             #Store the output of the system.
-            zt[ti,:] = z
+            zt[ti,:] = z.reshape(self.readouts)
 
             if ti % 100 == 0:
                 print('Finished {}'.format(ti))
 
         #Average error after learning
+        self.x = x #Keep the final state
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
         print('Training MAE: {:.5f}'.format(error_avg))
 
         # Sample variance-covariance matrix
-        S = X.T.dot(X)
-        S_std = sc.fit_transform(S)
-        pca.fit(S_std)
+        S = X_t.T.dot(X_t)
+        #S_std = sc.fit_transform(S)
+        pca.fit(S)#S_std)
         eigvals = pca.explained_variance_
 
         #Return the training progression
