@@ -138,7 +138,7 @@ class Force:
         #Average error after learning
         self.x = x #Keep the final state
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
-        print('Training MAE: {:.5f}'.format(error_avg))
+        # print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
         return zt, W_out_t
@@ -186,9 +186,9 @@ class Force:
     #Evaluate the neural network
     #NOTE: Need to consider multiple readouts and inputs
     #NOTE: Should check on all of this stuff
-    def evaluate(self, x, simtime, func_learned):
+    def evaluate(self, simtime, func_learned, e_type='mae'):
 
-        zpt = self.predict(x, simtime)
+        zpt = self.predict(simtime)
 
         #NOTE: I suppose we are only learning time dependent funcs
         #Simulation time and length of that vector
@@ -206,7 +206,11 @@ class Force:
 
         ft = ft.reshape((simtime_len, self.readouts))
 
-        error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
-        print('Testing MAE: {:.5f}'.format(error_avg))
-
-        return error_avg
+        if e_type=='mae':
+            error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
+            return error_avg
+        elif e_type=='rms':
+            rms = np.sqrt(np.sum(np.subtract(zpt, ft)**2)/simtime_len)
+            return rms
+        else:
+            raise ValueError("Not a valid error type")
