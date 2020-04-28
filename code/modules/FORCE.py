@@ -138,7 +138,7 @@ class Force:
         #Average error after learning
         self.x = x #Keep the final state
         error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
-        # print('Training MAE: {:.5f}'.format(error_avg))
+        print('Training MAE: {:.5f}'.format(error_avg))
 
         #Return the training progression
         return zt, W_out_t
