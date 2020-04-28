@@ -191,7 +191,7 @@ def fwdEuler(dimensions, t0, tf, V0, dt):
         Vprime = system(V[i])
         V[i+1] = V[i] + dt*Vprime
 
-    return t, V[:,0:dimensions]
+    return t, V[:,0:dimensions]/10
 
 #2H
 #Lorenz attractor 1D slice
