@@ -175,9 +175,8 @@ def sin(Ttime, dt, Ptime, vars):
     return [simtime, simtime2], [f, f2] , [zt, Wmag], zpt
 
 ################################################################################
-a, r, b = 10, 28, 8/3
-
 def system(S):
+    a, r, b = 10, 28, 8/3
     x, y, z = S
     return np.array([a * (y - x), x * (r - z) - y, x * y - b * z])
 
@@ -191,16 +190,19 @@ def fwdEuler(dimensions, t0, tf, V0, dt):
         Vprime = system(V[i])
         V[i+1] = V[i] + dt*Vprime
 
-    return t, V[:,0:dimensions]/10
+    return t, V[:,0:dimensions]
 
 #2H
 #Lorenz attractor 1D slice
-def lorenz(Ttime, dt, Ptime, dims=1):
+def lorenz(Ttime, dt, Ptime, dims=1, scale=10):
     rnn = Force(g=g_int, readouts=dims)
 
     V0 = np.array([0, 1, 2])
     t, V = fwdEuler(dims, 0, Ttime, V0, dt)
     t2, V2 = fwdEuler(dims, Ttime, Ttime+Ptime, V[-1], dt)
+
+    V = V/scale
+    V2 = V2/scale
 
     zt, Wmag = rnn.fit(t, V[:,:dims])
     zpt = rnn.predict(t2)
