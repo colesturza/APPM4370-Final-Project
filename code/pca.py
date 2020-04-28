@@ -2,7 +2,6 @@ from modules.PCA import PCA_Network
 from modules.simple_examples import sinwaves
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
 N = 1000
@@ -37,8 +36,7 @@ fig1.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
 
-ax_fz.set_title('Projection onto the {} leading Principal Components (PC)'.format(n_components)).set_fontsize('x-large')
-ax_fz.set_xlabel('Time (ms)').set_fontsize('large')
+ax_fz.set_xlabel('Time (ms)').set_fontsize('large').set_fontsize('large')
 ax_fz.plot(simtime, ft, lw=lw_f, label='f', color='green')
 ax_fz.plot(simtime, z_proj, lw=lw_z, label='approximation', color='firebrick')
 
@@ -79,9 +77,9 @@ for i, ax_x in enumerate(ax_xs):
         sns.despine(ax=ax_x, left=True)
     ax_x.set_yticks([])
     ax_x.plot(simtime, proj[i], color='slateblue')
-    ax_x.set_ylabel('PC{}'.format(i+1))
+    ax_x.set_ylabel('PC{}'.format(i+1)).set_fontsize('large')
     ax_x.set_ylim((-25, 25))
-ax_xs[-1].set_xlabel('Time (ms)')
+ax_xs[-1].set_xlabel('Time (ms)').set_fontsize('large')
 
 ############################################################################
 plt.show()
