@@ -8,7 +8,7 @@ def ELU(x, a=1):
     return x
 
 def sigmoid(x):
-    return 1/(1+exp(-x))
+    return 1/(1+np.exp(-x))
 
 def softmax(x):
     return np.exp(x)/sum(np.exp(x))
