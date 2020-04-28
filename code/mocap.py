@@ -13,7 +13,7 @@ dt = 0.1
 
 path = '../mocap_data/'
 
-data = pd.read_csv(path + 'walk_subj_2.csv')
+data = pd.read_csv(path + 'walk_subj_2_legs.csv')
 
 # rolling average to smooth out data
 data = data.rolling(15, min_periods=1).mean()
@@ -52,14 +52,14 @@ fig1, ax_fz = plt.subplots()
 fig1.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
-ax_fz.plot(new_steps, new_data[:,2], lw=lw_z, label='interp', color='firebrick')
-ax_fz.plot(new_steps, zt[:,2], lw=lw_z, label='interp', color='blue')
+ax_fz.plot(new_steps, new_data[:,17], lw=lw_z, label='interp', color='firebrick')
+ax_fz.plot(new_steps, zt[:,17], lw=lw_z, label='interp', color='blue')
 
 fig2, ax2 = plt.subplots()
 fig2.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
 
-ax2.plot(steps_predict, zpt[:,2], lw=lw_z, label='interp', color='blue')
+ax2.plot(steps_predict, zpt[:,17], lw=lw_z, label='interp', color='blue')
 
 plt.show()
