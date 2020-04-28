@@ -82,62 +82,86 @@ simtime = np.arange(0, nsecs, dt)
 simtime2 = np.arange(nsecs, nsecs+500, dt)
 
 # 2 outputs
-ft = multiple(simtime, triangle, periodic_cmplx)
-ft2 = multiple(simtime2, triangle, periodic_cmplx)
+ft_2 = multiple(simtime, triangle, periodic_cmplx)
+ft_2_2 = multiple(simtime2, triangle, periodic_cmplx)
 
 # 3 outputs
-# ft = multiple(simtime, triangle, periodic_cmplx, discont)
-# ft2 = multiple(simtime2, triangle, periodic_cmplx, discont)
+ft_3 = multiple(simtime, triangle, periodic_cmplx, discont)
+ft_3_2 = multiple(simtime2, triangle, periodic_cmplx, discont)
 
 # 2 outputs
-rnn = PCA_Network(N=N, p=p, g=g, readouts=2, randomReadout=True)
+rnn_2 = PCA_Network(N=N, p=p, g=g, readouts=2, randomReadout=True)
 
 # 3 outputs
-# rnn = PCA_Network(N=N, p=p, g=g, readouts=3, randomReadout=True)
+rnn_3 = PCA_Network(N=N, p=p, g=g, readouts=3, randomReadout=True)
 
-rnn.fit(simtime, ft, alpha=alpha)
-z_proj, eigvals, proj = rnn.predict(simtime2, n_components=n_components)
+rnn_2.fit(simtime, ft_2, alpha=alpha)
+z_proj_2, eigvals_2, proj_2 = rnn_2.predict(simtime2, n_components=n_components)
+
+rnn_3.fit(simtime, ft_3, alpha=alpha)
+z_proj_3, eigvals_3, proj_3 = rnn_3.predict(simtime2, n_components=n_components)
 
 ############################################################################
-# Approximation using leading PCs
+# Approximation using leading PCs 2 outputs
 lw_f, lw_z = 3.5, 1.5
 
-fig1, ax_fz = plt.subplots(2, 1, sharex=True)
-# fig1, ax_fz = plt.subplots(3, 1, sharex=True)
+fig1, ax_fz_1 = plt.subplots(2, 1, sharex=True)
 fig1.subplots_adjust(hspace=0)
 sns.set_style('white')
 
-ax_fz[0].plot(simtime2, ft2[:,0], lw=lw_f, label='f', color='#3cc882')
-ax_fz[0].plot(simtime2, z_proj[:,0], lw=lw_z, label='approximation', color='#ff4f28')
-ax_fz[0].set_ylabel('Output 1').set_fontsize('large')
-ax_fz[0].set_yticks(np.arange(-2.5, 2.6, 1))
-ax_fz[0].set_ylim(-3, 3)
-sns.despine(ax=ax_fz[0], bottom=True)
+ax_fz_1[0].plot(simtime2, ft_2_2[:,0], lw=lw_f, color='#3cc882')
+ax_fz_1[0].plot(simtime2, z_proj_2[:,0], lw=lw_z, color='#ff4f28')
+ax_fz_1[0].set_ylabel('Output 1').set_fontsize('large')
+ax_fz_1[0].set_yticks(np.arange(-2.5, 2.6, 1))
+ax_fz_1[0].set_ylim(-3, 3)
+sns.despine(ax=ax_fz_1[0], bottom=True)
 
-ax_fz[1].plot(simtime2, ft2[:,1], lw=lw_f, label='f', color='#32a064')
-ax_fz[1].plot(simtime2, z_proj[:,1], lw=lw_z, label='approximation', color='#be3b1e')
-ax_fz[1].set_ylabel('Output 2').set_fontsize('large')
-ax_fz[1].set_yticks(np.arange(-2.5, 2.6, 1))
-ax_fz[1].set_ylim(-3, 3)
-sns.despine(ax=ax_fz[1])
-# sns.despine(ax=ax_fz[1], bottom=True)
+ax_fz_1[1].plot(simtime2, ft_2_2[:,1], lw=lw_f, color='#32a064')
+ax_fz_1[1].plot(simtime2, z_proj_2[:,1], lw=lw_z, color='#be3b1e')
+ax_fz_1[1].set_ylabel('Output 2').set_fontsize('large')
+ax_fz_1[1].set_yticks(np.arange(-2.5, 2.6, 1))
+ax_fz_1[1].set_ylim(-3, 3)
+sns.despine(ax=ax_fz_1[1])
 
-# ax_fz[2].plot(simtime2, ft2[:,2], lw=lw_f, label='f', color='#287346')
-# ax_fz[2].plot(simtime2, z_proj[:,2], lw=lw_z, label='approximation', color='#8c2e14')
-# ax_fz[2].set_ylabel('Output 3').set_fontsize('large')
-# ax_fz[2].set_xlabel('Time (ms)').set_fontsize('large')
-# ax_fz[2].set_yticks(np.arange(-2.5, 2.6, 1))
-# ax_fz[2].set_ylim(-3, 3)
-# sns.despine(ax=ax_fz[2])
+############################################################################
+# Approximation using leading PCs 3 outputs
+lw_f, lw_z = 3.5, 1.5
+
+fig2, ax_fz_2 = plt.subplots(3, 1, sharex=True)
+fig2.subplots_adjust(hspace=0)
+sns.set_style('white')
+
+ax_fz_2[0].plot(simtime2, ft_3_2[:,0], lw=lw_f, color='#3cc882')
+ax_fz_2[0].plot(simtime2, z_proj_3[:,0], lw=lw_z, color='#ff4f28')
+ax_fz_2[0].set_ylabel('Output 1').set_fontsize('large')
+ax_fz_2[0].set_yticks(np.arange(-2.5, 2.6, 1))
+ax_fz_2[0].set_ylim(-3, 3)
+sns.despine(ax=ax_fz_2[0], bottom=True)
+
+ax_fz_2[1].plot(simtime2, ft_3_2[:,1], lw=lw_f, color='#32a064')
+ax_fz_2[1].plot(simtime2, z_proj_3[:,1], lw=lw_z, color='#be3b1e')
+ax_fz_2[1].set_ylabel('Output 2').set_fontsize('large')
+ax_fz_2[1].set_yticks(np.arange(-2.5, 2.6, 1))
+ax_fz_2[1].set_ylim(-3, 3)
+sns.despine(ax=ax_fz_2[1], bottom=True)
+
+ax_fz_2[2].plot(simtime2, ft_3_2[:,2], lw=lw_f, color='#287346')
+ax_fz_2[2].plot(simtime2, z_proj_3[:,2], lw=lw_z, color='#8c2e14')
+ax_fz_2[2].set_ylabel('Output 3').set_fontsize('large')
+ax_fz_2[2].set_xlabel('Time (ms)').set_fontsize('large')
+ax_fz_2[2].set_yticks(np.arange(-2.5, 2.6, 1))
+ax_fz_2[2].set_ylim(-3, 3)
+sns.despine(ax=ax_fz_2[2])
 
 ############################################################################
 # Eigenvalues
-fig2, ax_eig = plt.subplots()
-fig2.set_tight_layout(True)
+fig3, ax_eig = plt.subplots()
+fig3.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
 
-ax_eig.plot(np.arange(1,101), np.log10(eigvals[:100]), color='slateblue')
+ax_eig.plot(np.arange(1,101), np.log10(eigvals_2[:100]), color='slateblue', label='2 Outputs')
+ax_eig.plot(np.arange(1,101), np.log10(eigvals_3[:100]), color='lightskyblue', label='3 Outputs')
 ax_eig.set_xlabel('eigenvalue').set_fontsize('large')
 ax_eig.set_ylabel('log10(eigenvalue)').set_fontsize('large')
 
@@ -155,26 +179,49 @@ ax_eig.spines['bottom'].set_position('zero')
 ax_eig.spines['top'].set_color('none')
 ax_eig.xaxis.tick_bottom()
 
+ax_eig.legend()
+
 ############################################################################
 # Plotting the firing rates of sample neurons
-fig3, ax_xs = plt.subplots(n_components, 1, sharex=True)
+fig3, ax_xs_1 = plt.subplots(n_components, 1, sharex=True)
 fig3.subplots_adjust(hspace=0)
 sns.set_style('white')
 
 for i in range(n_components):
 
-    ax_xs[i].plot(simtime2, proj[i], color='slateblue')
-    ax_xs[i].set_ylabel('PC{}'.format(i+1)).set_fontsize('large')
+    ax_xs_1[i].plot(simtime2, proj_2[i], color='slateblue')
+    ax_xs_1[i].set_ylabel('PC{}'.format(i+1)).set_fontsize('large')
 
     if i < n_components-1:
-        sns.despine(ax=ax_xs[i], bottom=True, left=True)
+        sns.despine(ax=ax_xs_1[i], bottom=True, left=True)
     else:
-        sns.despine(ax=ax_xs[i], left=True)
+        sns.despine(ax=ax_xs_1[i], left=True)
 
-    ax_xs[i].set_ylim((-25, 25))
-    ax_xs[i].set_yticks([])
+    ax_xs_1[i].set_ylim((-25, 25))
+    ax_xs_1[i].set_yticks([])
 
-ax_xs[-1].set_xlabel('Time (ms)').set_fontsize('large')
+ax_xs_1[-1].set_xlabel('Time (ms)').set_fontsize('large')
+
+############################################################################
+# Plotting the firing rates of sample neurons
+fig4, ax_xs_2 = plt.subplots(n_components, 1, sharex=True)
+fig4.subplots_adjust(hspace=0)
+sns.set_style('white')
+
+for i in range(n_components):
+
+    ax_xs_2[i].plot(simtime2, proj_3[i], color='slateblue')
+    ax_xs_2[i].set_ylabel('PC{}'.format(i+1)).set_fontsize('large')
+
+    if i < n_components-1:
+        sns.despine(ax=ax_xs_2[i], bottom=True, left=True)
+    else:
+        sns.despine(ax=ax_xs_2[i], left=True)
+
+    ax_xs_2[i].set_ylim((-25, 25))
+    ax_xs_2[i].set_yticks([])
+
+ax_xs_2[-1].set_xlabel('Time (ms)').set_fontsize('large')
 
 ############################################################################
 plt.show()
