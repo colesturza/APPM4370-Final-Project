@@ -1,14 +1,17 @@
-from modules.PCA import PCA_NN
-from modules.FORCE import Force
+from modules.PCA import PCA_Network
+from modules.simple_examples import sinwaves
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 
-linewidth = 3
-fontsize = 14
-fontweight = 'bold'
+N = 1000
+p = 0.1
+g = 1.5
+alpha = 1.0
+nsecs = 500
+dt = 0.1
+n_components = 8
 
 def sum_of_four_sinusoids(simtime, *, amp=1.3, freq=1/60):
 
@@ -20,149 +23,65 @@ def sum_of_four_sinusoids(simtime, *, amp=1.3, freq=1/60):
 
     return ft
 
-N = 1000
-p = 0.1
-g = 1.5
-alpha = 1.0
-nsecs = 1440
-dt = 0.1
-learn_every = 2
-
 simtime = np.arange(0, nsecs, dt)
-simtime_len = len(simtime)
+ft = sum_of_four_sinusoids(simtime, amp=1.3, freq=1/60)
 
-# rnn = PCA_NN(N=N, p=p, g=g)
+rnn = PCA_Network(N=N, p=p, g=g, randomReadout=True)
+z_proj, eigvals, proj, proj_w = rnn.fit(simtime, ft, alpha=alpha, n_components=n_components)
 
-# for i in range(2, 4):
-#     zt, x, eigvals, projections = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, learn_every=learn_every)
-#     projections = projections.reshape((simtime_len, 9))
-#     df = pd.DataFrame(data=projections)
-#     df.to_csv('projections{}'.format(i), index=False)
-
-#
-# zpt = rnn.predict(x, simtime2)
-# avg_error = rnn.evaluate(x, simtime2, sum_of_four_sinusoids)
-
-# rnn = Force(N=N, p=p, g=g)
-# zt, _ = rnn.fit(simtime, sum_of_four_sinusoids, alpha=alpha, learn_every=learn_every)
-#
-# fig1, axs = plt.subplots(2,1)
-# fig1.set_tight_layout(True)
-# sns.set_style('white')
-# sns.despine()
-#
-# axs[0].plot(simtime[-4500:], sum_of_four_sinusoids(simtime)[-4500:], color='firebrick', lw=linewidth)
-# axs[0].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
-# axs[0].set_ylabel('f', fontsize=fontsize, fontweight=fontweight)
-# axs[0].set_title('Actual', fontsize=fontsize, fontweight=fontweight)
-# axs[0].set_yticklabels([])
-# axs[0].set_xticklabels([])
-#
-# axs[1].plot(simtime[-4500:], zt[-4500:], color='#aba078', lw=linewidth)
-# axs[1].set_xlabel('time', fontsize=fontsize, fontweight=fontweight)
-# axs[1].set_ylabel('z', fontsize=fontsize, fontweight=fontweight)
-# axs[1].set_title('Training', fontsize=fontsize, fontweight=fontweight)
-# axs[1].set_yticklabels([])
-# axs[1].set_xticklabels([])
-#
-# eigvals = pd.read_csv('eigvals.txt', header=None).to_numpy()
-projections1 = pd.read_csv('projections1').to_numpy()
-projections2 = pd.read_csv('projections2').to_numpy()
-projections3 = pd.read_csv('projections3').to_numpy()
-#
-# fig2, ax2 = plt.subplots()
-# fig2.set_tight_layout(True)
-# sns.set_style('white')
-# sns.despine()
-# ax2.plot(np.arange(1,101), np.log10(eigvals), color='slateblue', lw=linewidth)
-# ax2.set_xlabel('eigenvalue', fontsize=fontsize, fontweight=fontweight)
-# ax2.set_ylabel('log10(eigenvalue)', fontsize=fontsize, fontweight=fontweight)
-#
-# # set the x-spine
-# ax2.spines['left'].set_position('zero')
-#
-# # turn off the right spine/ticks
-# ax2.spines['right'].set_color('none')
-# ax2.yaxis.tick_left()
-#
-# # set the y-spine
-# ax2.spines['bottom'].set_position('zero')
-#
-# # turn off the top spine/ticks
-# ax2.spines['top'].set_color('none')
-# ax2.xaxis.tick_bottom()
-#
-# fig3, ax3 = plt.subplots(4,2)
-# fig3.set_tight_layout(True)
-# sns.set_style('white')
-# sns.despine()
-#
-# ax3[0,0].plot(simtime[-4500:], projections1[-4500:,0], color='#aba078')
-# ax3[0,0].set_xlabel('time')
-# ax3[0,0].set_ylabel('PC1')
-# ax3[0,0].set_yticklabels([])
-# ax3[0,0].set_xticklabels([])
-#
-# ax3[0,1].plot(simtime[-4500:], projections1[-4500:,1], color='#aba078')
-# ax3[0,1].set_xlabel('time')
-# ax3[0,1].set_ylabel('PC2')
-# ax3[0,1].set_yticklabels([])
-# ax3[0,1].set_xticklabels([])
-#
-# ax3[1,0].plot(simtime[-4500:], projections1[-4500:,2], color='#aba078')
-# ax3[1,0].set_xlabel('time')
-# ax3[1,0].set_ylabel('PC3')
-# ax3[1,0].set_yticklabels([])
-# ax3[1,0].set_xticklabels([])
-#
-# ax3[1,1].plot(simtime[-4500:], projections1[-4500:,3], color='#aba078')
-# ax3[1,1].set_xlabel('time')
-# ax3[1,1].set_ylabel('PC4')
-# ax3[1,1].set_yticklabels([])
-# ax3[1,1].set_xticklabels([])
-#
-# ax3[2,0].plot(simtime[-4500:], projections1[-4500:,4], color='#aba078')
-# ax3[2,0].set_xlabel('time')
-# ax3[2,0].set_ylabel('PC5')
-# ax3[2,0].set_yticklabels([])
-# ax3[2,0].set_xticklabels([])
-#
-# ax3[2,1].plot(simtime[-4500:], projections1[-4500:,5], color='#aba078')
-# ax3[2,1].set_xlabel('time')
-# ax3[2,1].set_ylabel('PC6')
-# ax3[2,1].set_yticklabels([])
-# ax3[2,1].set_xticklabels([])
-#
-# ax3[3,0].plot(simtime[-4500:], projections1[-4500:,6], color='#aba078')
-# ax3[3,0].set_xlabel('time')
-# ax3[3,0].set_ylabel('PC7')
-# ax3[3,0].set_yticklabels([])
-# ax3[3,0].set_xticklabels([])
-#
-# ax3[3,1].plot(simtime[-4500:], projections1[-4500:,7], color='#aba078')
-# ax3[3,1].set_xlabel('time')
-# ax3[3,1].set_ylabel('PC8')
-# ax3[3,1].set_yticklabels([])
-# ax3[3,1].set_xticklabels([])
-
-fig4, ax4 = plt.subplots()
-fig4.set_tight_layout(True)
+############################################################################
+# Approximation using leading PCs
+lw_f, lw_z = 3.5, 1.5
+fig1, ax_fz = plt.subplots()
+fig1.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
-ax4.plot(projections1[:,0][-4000:], projections1[:,1][-4000:], color='#aba078')
-ax4.plot(projections2[:,0][-4000:], projections2[:,1][-4000:], color='#78725c')
-ax4.plot(projections3[:,0][-4000:], projections3[:,1][-4000:], color='#423f33')
-ax4.set_xlabel('PC1')
-ax4.set_ylabel('PC2')
 
-fig5 = plt.figure()
-fig5.set_tight_layout(True)
-ax5 = fig5.gca(projection='3d')
+ax_fz.set_title('Projection onto the {} leading Principal Components (PC)'.format(n_components)).set_fontsize('x-large')
+ax_fz.set_xlabel('Time (ms)').set_fontsize('large')
+ax_fz.plot(simtime, ft, lw=lw_f, label='f', color='green')
+ax_fz.plot(simtime, z_proj, lw=lw_z, label='approximation', color='firebrick')
+
+############################################################################
+# Eigenvalues
+fig2, ax_eig = plt.subplots()
+fig2.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
-ax5.plot(projections1[:,0][2::50], projections1[:,1][2::50], projections1[:,8][2::50], color='#aba078')
-ax5.set_xlabel('PC1')
-ax5.set_ylabel('PC2')
-ax5.set_zlabel('PC80')
 
+ax_eig.plot(np.arange(1,101), np.log10(eigvals[:100]), color='slateblue')
+ax_eig.set_xlabel('eigenvalue').set_fontsize('large')
+ax_eig.set_ylabel('log10(eigenvalue)').set_fontsize('large')
+
+# set the x-spine
+ax_eig.spines['left'].set_position('zero')
+
+# turn off the right spine/ticks
+ax_eig.spines['right'].set_color('none')
+ax_eig.yaxis.tick_left()
+
+# set the y-spine
+ax_eig.spines['bottom'].set_position('zero')
+
+# turn off the top spine/ticks
+ax_eig.spines['top'].set_color('none')
+ax_eig.xaxis.tick_bottom()
+
+############################################################################
+# Plotting the firing rates of sample neurons
+fig3, ax_xs = plt.subplots(n_components, 1, sharex=True)
+fig3.set_tight_layout(True)
+for i, ax_x in enumerate(ax_xs):
+    sns.set_style('white')
+    if i < n_components-1:
+        sns.despine(ax=ax_x, bottom=True, left=True)
+    else:
+        sns.despine(ax=ax_x, left=True)
+    ax_x.set_yticks([])
+    ax_x.plot(simtime, proj[i], color='slateblue')
+    ax_x.set_ylabel('PC{}'.format(i+1))
+    ax_x.set_ylim((-25, 25))
+ax_xs[-1].set_xlabel('Time (ms)')
+
+############################################################################
 plt.show()
