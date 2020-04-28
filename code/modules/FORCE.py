@@ -45,7 +45,7 @@ class Force:
 ################################################################################
     #Train the network on specified function
     #NOTE: Need to implement multiple readuts and inputs
-    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2):
+    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2, IC=None):
 
     #Setting up some stuff
 
@@ -146,7 +146,7 @@ class Force:
 ################################################################################
     #Use the trained neural network predict or generate
     #NOTE: Need to consider multiple readouts and inputs
-    def predict(self, simtime):
+    def predict(self, simtime, IC=None):
         if self.x is None:
             x = self.setIC()
         else: x = self.x
