@@ -194,8 +194,8 @@ def fwdEuler(dimensions, t0, tf, V0, dt):
 
 #2H
 #Lorenz attractor 1D slice
-def lorenz(Ttime, dt, Ptime, dims=1, scale=10):
-    rnn = Force(g=g_int, readouts=dims)
+def lorenz(Ttime, dt, Ptime, dims=1, scale=10, random=False):
+    rnn = Force(g=g_int, readouts=dims, randomReadout=random)
 
     V0 = np.array([0, 1, 2])
     t, V = fwdEuler(dims, 0, Ttime, V0, dt)
