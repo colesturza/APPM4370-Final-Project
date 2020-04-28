@@ -1,5 +1,4 @@
 from modules.PCA import PCA_Network
-from modules.simple_examples import sinwaves
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,7 +7,7 @@ N = 1000
 p = 0.1
 g = 1.5
 alpha = 1.0
-nsecs = 500
+nsecs = 2500
 dt = 0.1
 n_components = 8
 
@@ -23,10 +22,13 @@ def sum_of_four_sinusoids(simtime, *, amp=1.3, freq=1/60):
     return ft
 
 simtime = np.arange(0, nsecs, dt)
+simtime2 = np.arange(nsecs, nsecs+500, dt)
 ft = sum_of_four_sinusoids(simtime, amp=1.3, freq=1/60)
+ft2 = sum_of_four_sinusoids(simtime2, amp=1.3, freq=1/60)
 
 rnn = PCA_Network(N=N, p=p, g=g, randomReadout=True)
-z_proj, eigvals, proj, proj_w = rnn.fit(simtime, ft, alpha=alpha, n_components=n_components)
+rnn.fit(simtime, ft, alpha=alpha)
+z_proj, eigvals, proj = rnn.predict(simtime2, n_components=n_components)
 
 ############################################################################
 # Approximation using leading PCs
@@ -36,9 +38,9 @@ fig1.set_tight_layout(True)
 sns.set_style('white')
 sns.despine()
 
-ax_fz.set_xlabel('Time (ms)').set_fontsize('large').set_fontsize('large')
-ax_fz.plot(simtime, ft, lw=lw_f, label='f', color='green')
-ax_fz.plot(simtime, z_proj, lw=lw_z, label='approximation', color='firebrick')
+ax_fz.set_xlabel('Time (ms)').set_fontsize('large')
+ax_fz.plot(simtime2, ft2, lw=lw_f, label='f', color='#3cc882')
+ax_fz.plot(simtime2, z_proj, lw=lw_z, label='approximation', color='#ff4f28')
 
 ############################################################################
 # Eigenvalues
@@ -76,7 +78,7 @@ for i, ax_x in enumerate(ax_xs):
     else:
         sns.despine(ax=ax_x, left=True)
     ax_x.set_yticks([])
-    ax_x.plot(simtime, proj[i], color='slateblue')
+    ax_x.plot(simtime2, proj[i], color='slateblue')
     ax_x.set_ylabel('PC{}'.format(i+1)).set_fontsize('large')
     ax_x.set_ylim((-25, 25))
 ax_xs[-1].set_xlabel('Time (ms)').set_fontsize('large')
