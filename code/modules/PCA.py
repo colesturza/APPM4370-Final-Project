@@ -1,13 +1,37 @@
 from modules.FORCE import Force
 import numpy as np
 from scipy.sparse import random
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn import preprocessing
 
-class PCA_NN(Force):
+def PCA(data, n_components=8, return_matrix=True, return_eigenvalues=True):
+
+    # Covariance matrix
+    cov_matrix = np.cov(preprocessing.scale(data.T))
+
+    # Diagonalization of the covariance matrix
+    eig_val, eig_vec = np.linalg.eigh(cov_matrix)
+
+    if return_matrix or return_eigenvalues:
+
+        if return_matrix:
+            # Projection of the data points over the eigenvectors
+            Proj = data.dot(eig_vec[:,-n_components:])
+
+        if return_matrix and return_eigenvalues:
+            return eig_vec[:,-n_components:], Proj, eig_val
+
+        elif return_matrix:
+            return eig_vec[:,-n_components:], Proj
+
+        else:
+            return eig_vec[:,-n_components:], eig_val
+
+    return eig_vec[:,-n_components:]
+
+class PCA_Network(Force):
 
 ################################################################################
-    def fit(self, simtime, func_to_learn, *, alpha=1.0, learn_every=2):
+    def fit(self, simtime, func_to_learn, *, alpha=1.0, n_components=8):
 
     #Setting up some stuff
 
@@ -57,196 +81,50 @@ class PCA_NN(Force):
 
         P = (1.0/alpha)*np.eye(self.N) #Inverse correlation matrix
 
-        # PCA stuff
-        pca = PCA(n_components=100)
-        projections = np.zeros((simtime_len, 9, self.readouts))
+        #Magnitude of weights as we learn
+        proj_ws = np.zeros((simtime_len, n_components, self.readouts))
+
+        # Store x after activation (r) at each time step
         X = np.zeros((simtime_len, self.N))
 
         #Iterate and train the network
         for ti in range(simtime_len):
 
-            # sim, so x(t) and r(t) are created.
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
+            x = x - (x*dt + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt)/self.tau
             r = self.activation(x)
             z = self.W_out.T.dot(r)
 
-            X[ti, :] = x.reshape(self.N)
+            #Store r at time step ti
+            X[ti, :] = r.reshape(self.N)
 
-            # Perform PCA at each timestep and project w onto PC 1, PC 2, and PC 80.
-            X_t = X[:ti+1,:]
-            # Sample variance-covariance matrix
-            S = X_t.T.dot(X_t)
-            #S_std = sc.fit_transform(S)
-            pca.fit(S)#S_std)
+            #Update inverse correlation matrix
+            k = P.dot(r)
+            rPr = r.T.dot(k)
+            c = 1.0/(1.0 + rPr)
+            P = P - np.outer(k, k * c)
 
-            eigvects = pca.components_
+            #Update the error for the linear readout
+            e = z - ft[ti].reshape((self.readouts, 1))
 
-            # Project w onto PC 1
-            project_pc1 = self.W_out.T.dot(eigvects[0]).reshape(self.readouts)
-            # Project w onto PC 2
-            project_pc2 = self.W_out.T.dot(eigvects[1]).reshape(self.readouts)
-            # Project w onto PC 3
-            project_pc3 = self.W_out.T.dot(eigvects[2]).reshape(self.readouts)
-            # Project w onto PC 4
-            project_pc4 = self.W_out.T.dot(eigvects[3]).reshape(self.readouts)
-            # Project w onto PC 5
-            project_pc5 = self.W_out.T.dot(eigvects[4]).reshape(self.readouts)
-            # Project w onto PC 6
-            project_pc6 = self.W_out.T.dot(eigvects[5]).reshape(self.readouts)
-            # Project w onto PC 7
-            project_pc7 = self.W_out.T.dot(eigvects[6]).reshape(self.readouts)
-            # Project w onto PC 8
-            project_pc8 = self.W_out.T.dot(eigvects[7]).reshape(self.readouts)
-            # Project w onto PC 80
-            project_pc80 = self.W_out.T.dot(eigvects[79]).reshape(self.readouts)
+            #Update the output weights
+            dW_out = -k.dot(e.T) * c
+            self.W_out = self.W_out + dW_out
+            #
+            # if ti%100 == 0 and ti != 0:
+            #     print('Finished {}'.format(ti))
 
-            projects = np.array([project_pc1, project_pc2, project_pc3,
-                                 project_pc4, project_pc5, project_pc6,
-                                 project_pc7, project_pc8, project_pc80])
-
-            projections[ti, :] = projects
-
-            if (ti+1) % learn_every == 0:
-                #Update inverse correlation matrix
-                k = P.dot(r)
-                rPr = r.T.dot(k)
-                c = 1.0/(1.0 + rPr)
-                P = P - np.outer(k, k * c)
-
-                #Update the error for the linear readout
-                e = z - ft[ti]
-
-                #Update the output weights
-                dW_out = -k.dot(e.T) * c
-                self.W_out = self.W_out + dW_out
-
-            #Saving internal outputs
-            if self.saveInternal:
-                self.intOut[ti,:] = r[:self.num2save,0]
-
-            #Store the output of the system.
-            zt[ti,:] = z.reshape(self.readouts)
-
-            if ti % 100 == 0:
-                print('Finished {}'.format(ti))
-
-        #Average error after learning
         self.x = x #Keep the final state
-        error_avg = np.sum(np.abs(np.subtract(zt, ft)))/simtime_len
-        print('Training MAE: {:.5f}'.format(error_avg))
 
-        # Sample variance-covariance matrix
-        S = X_t.T.dot(X_t)
-        #S_std = sc.fit_transform(S)
-        pca.fit(S)#S_std)
-        eigvals = pca.explained_variance_
+        eigvecs, proj, eigvals = PCA(X, n_components=n_components, return_matrix=True, return_eigenvalues=True)
+
+        # Projection over the leading principal components
+        proj_w = self.W_out.T.dot(eigvecs)
+
+        z_proj = proj.dot(proj_w.T)
+
+        eigvals = eigvals[::-1]
+
+        proj = proj.T[::-1,...]
 
         #Return the training progression
-        return zt, x, eigvals, projections
-
-################################################################################
-    #Use the trained neural network predict or generate
-    #NOTE: Need to consider multiple readouts and inputs
-    def predict(self, x, simtime):
-
-        simtime_len = simtime.shape[0]
-
-        diff = np.diff(simtime)
-        if not np.any(np.isclose(diff, diff[0])):
-            raise ValueError('All values in simtime must be evenly spaced.')
-
-        dt = diff[0]
-
-        zpt = np.zeros((simtime_len, self.readouts))
-
-        r = self.activation(x)
-        z = self.W_out.T.dot(r)
-
-        # PCA stuff
-        pca = PCA(n_components=100)
-        sc = StandardScaler()
-        projections = np.zeros((simtime_len, 9))
-        X = np.zeros((simtime_len, self.N))
-
-        for ti in range(simtime_len):
-
-            # sim, so x(t) and r(t) are created.
-            x = (1.0-dt)*x + self.W_int.dot(r*dt) + self.W_feed.dot(z)*dt
-            r = self.activation(x)
-            z = self.W_out.T.dot(r)
-
-            # Perform PCA
-            X[ti, :] = x.reshape(self.N)
-
-            # Perform PCA at each timestep and project w onto PC 1, PC 2, and PC 80.
-            X_t = X[:ti+1,:]
-            # Sample variance-covariance matrix
-            S = X_t.T.dot(X_t)
-            S_std = sc.fit_transform(S)
-            pca.fit(S_std)
-
-            eigvects = pca.components_
-
-            # Project w onto PC 1
-            project_pc1 = self.W_out.T.dot(eigvects[0])[0]
-            # Project w onto PC 2
-            project_pc2 = self.W_out.T.dot(eigvects[1])[0]
-            # Project w onto PC 3
-            project_pc3 = self.W_out.T.dot(eigvects[2])[0]
-            # Project w onto PC 4
-            project_pc4 = self.W_out.T.dot(eigvects[3])[0]
-            # Project w onto PC 5
-            project_pc5 = self.W_out.T.dot(eigvects[4])[0]
-            # Project w onto PC 6
-            project_pc6 = self.W_out.T.dot(eigvects[5])[0]
-            # Project w onto PC 7
-            project_pc7 = self.W_out.T.dot(eigvects[6])[0]
-            # Project w onto PC 8
-            project_pc8 = self.W_out.T.dot(eigvects[7])[0]
-            # Project w onto PC 80
-            project_pc80 = self.W_out.T.dot(eigvects[79])[0]
-
-            projects = np.array([project_pc1, project_pc2, project_pc3,
-                                 project_pc4, project_pc5, project_pc6,
-                                 project_pc7, project_pc8, project_pc80])
-
-            projections[ti, :] = projects
-
-            zpt[ti,:] = z.reshape(self.readouts)
-
-        # Sample variance-covariance matrix
-        S = X.T.dot(X)
-        S_std = sc.fit_transform(S)
-        pca.fit(S_std)
-        eigvals = pca.explained_variance_
-
-        return zpt, eigvals, projections
-
-################################################################################
-    #Evaluate the neural network
-    #NOTE: Need to consider multiple readouts and inputs
-    #NOTE: Should check on all of this stuff
-    def evaluate(self, x, simtime, func_learned):
-
-        zpt = super().predict(x, simtime)
-
-        #NOTE: I suppose we are only learning time dependent funcs
-        #Simulation time and length of that vector
-        simtime_len = simtime.shape[0]
-
-        #Check if func_to_learn is either a callable function or an
-        #ndarray of values to learn.
-        if callable(func_learned):
-            ft = func_learned(simtime) #Function being learned (vector)
-        elif type(func_learned) is np.ndarray:
-            ft = func_learned #Input is an array
-        else:
-            raise ValueError("""func_learned must either be a callable function
-                or a numpy ndarray of shape (n, {}).""".format(self.readouts))
-
-        ft = ft.reshape((simtime_len, self.readouts))
-
-        error_avg = np.sum(np.abs(np.subtract(zpt, ft)))/simtime_len
-        print('Testing MAE: {:.5f}'.format(error_avg))
-
-        return error_avg
+        return z_proj, eigvals, proj, proj_ws
