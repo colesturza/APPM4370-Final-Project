@@ -12,8 +12,3 @@ Project is based on "Generating Coherent Patterns of Activity from Chaotic Neura
 ### Collaboratory Viewing Link
 
 https://colab.research.google.com/drive/12Z_NM8IWzwE38GNQTT00GjiSTP0rcFOK
-
-### Additional References:
-
-[1] Amina Keldibek, Chaotic Recurrent Neural Networks, (2016), GitHub repository, https://github.com/AminaKeldibek/chaotic_RNN
-
