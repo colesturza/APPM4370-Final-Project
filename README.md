@@ -9,10 +9,6 @@ Zachary Berrimanrozen
 
 Project is based on "Generating Coherent Patterns of Activity from Chaotic Neural Networks" (David Sussillo and L. F. Abbott, 2009, http://www.theswartzfoundation.org/docs/Sussillo-Abbott-Coherent-Patterns-August-2009.pdf)
 
-### Overleaf Link
-
-https://www.overleaf.com/6789646196rnqdfbpkbyrv
-
 ### Collaboratory Viewing Link
 
 https://colab.research.google.com/drive/12Z_NM8IWzwE38GNQTT00GjiSTP0rcFOK
