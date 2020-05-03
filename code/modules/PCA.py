@@ -3,38 +3,38 @@ import numpy as np
 from scipy.sparse import random
 from sklearn import preprocessing
 
-# Perform PCA on a given set of time series data
+# Perform PCA on a given set of data
 # n_components = the number of leading principal components to keep
 # return_proj = return projection of data points over the eigenvectors if True
 # return_eigenvals = return leading principal components' eigenvalue if True
 def PCA(data, *, n_components=8, return_proj=True, return_eigenvals=True):
 
-    # Covariance matrix
+    # Create covariance matrix after scaling data
     cov_matrix = np.cov(preprocessing.scale(data.T))
 
     # Diagonalization of the covariance matrix
-    eig_val, eig_vec = np.linalg.eigh(cov_matrix)
+    eigvals, eigvecs = np.linalg.eigh(cov_matrix)
 
     if return_proj or return_eigenvals:
 
         if return_proj:
 
             # Projection of the data points over the eigenvectors
-            Proj = data.dot(eig_vec[:,-n_components:])
+            proj = data.dot(eigvecs[:,-n_components:])
 
             if return_eigenvals:
 
-                return eig_vec[:,-n_components:], Proj, eig_val
+                return eigvecs[:,-n_components:], proj, eigvals
 
             else:
 
-                return eig_vec[:,-n_components:], Proj
+                return eigvecs[:,-n_components:], proj
 
         else:
 
-            return eig_vec[:,-n_components:], eig_val
+            return eigvecs[:,-n_components:], eigvals
 
-    return eig_vec[:,-n_components:]
+    return eigvecs[:,-n_components:]
 
 class PCA_Network(Force):
 
